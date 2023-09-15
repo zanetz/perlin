@@ -1,0 +1,98 @@
+// function setup() {
+//   createCanvas(600, 600); // create a canvas with width and height of 600 pixels
+// }
+
+// function draw() {
+//   // set the background to black
+//   background(0);
+
+//   // set the fill color to white
+//   //background(255);
+  
+//   const rows = 300; // number of rows
+//   const cols = 300; // number of columns
+//   const spacing = 3; // spacing between points
+  
+//   // loop through each row and column to draw points
+//   for (let i = 0; i < rows; i++) {
+//     for (let j = 0; j < cols; j++) {
+//       const x = j * spacing ; // calculate x coordinate of point
+//       const y = i * spacing ; // calculate y coordinate of point
+      
+//       // use Perlin noise to distort the position of the point
+//       const noiseVal = noise(x/width, y/height);
+//       const angle = noiseVal * TWO_PI;
+//       const distortion = map(noiseVal, 50, 100, 100, spacing/2);
+//       const newX = x + distortion * cos(angle);
+//       const newY = y + distortion * sin(angle);
+      
+//       // interpolate between colors based on position
+//       const topLeft = color(255, 255, 0); // yellow
+//       const topRight = color(255, 0, 0); // red
+//       const bottomLeft = color(0, 0, 255); // blue
+//       const bottomRight = color(0, 255, 0); // green
+      
+      
+//       const posx = map(j, 0, cols-1, 0, 1);
+//       const posy = map(i, 0, rows-1, 0, 1);
+//       const colorTop = lerpColor(topLeft, topRight, posx);
+//       const colorBottom = lerpColor(bottomLeft, bottomRight, posx);
+//       const colorFinal = lerpColor(colorTop, colorBottom, posy);
+      
+//       // set the fill color to the interpolated color
+//       fill(colorFinal);
+//       circle(newX, newY, 4); // draw a circle at the distorted (newX, newY) position with a radius of 2 pixels
+//     }
+//   }
+// }
+
+
+
+
+// function setup() {
+//   createCanvas(600, 600); // create a canvas with width and height of 600 pixels
+// }
+
+// function draw() {
+//   // set the background to black
+//   background(0);
+
+//   // set the fill color to white
+//   //background(255);
+  
+//   const rows = 500; // number of rows
+//   const cols = 500; // number of columns
+//   const spacing = 2; // spacing between points
+//   const rectSize = 5; // size of rectangles
+  
+//   // loop through each row and column to draw rectangles
+//   for (let i = 0; i < rows; i++) {
+//     for (let j = 0; j < cols; j++) {
+//       const x = j * spacing ; // calculate x coordinate of rectangle
+//       const y = i * spacing ; // calculate y coordinate of rectangle
+      
+//       // use Perlin noise to distort the position of the rectangle
+//       const noiseVal = noise(x/width, y/height);
+//       const angle = noiseVal * TWO_PI;
+//       const distortion = map(noiseVal, 50, 100, 100, spacing/2);
+//       const newX = x + distortion * cos(angle);
+//       const newY = y + distortion * sin(angle);
+      
+//       // interpolate between colors based on position
+//       const topLeft = color(255, 255, 0); // yellow
+//       const topRight = color(255, 0, 0); // red
+//       const bottomLeft = color(0, 0, 255); // blue
+//       const bottomRight = color(0, 255, 0); // green
+      
+//       const posx = map(j, 0, cols-1, 0, 1);
+//       const posy = map(i, 0, rows-1, 0, 1);
+//       const colorTop = lerpColor(topLeft, topRight, posx);
+//       const colorBottom = lerpColor(bottomLeft, bottomRight, posx);
+//       const colorFinal = lerpColor(colorTop, colorBottom, posy);
+      
+//       // set the fill color to the interpolated color
+//       fill(colorFinal);
+//       rect(newX, newY, rectSize, rectSize); // draw a rectangle at the distorted (newX, newY) position with a fixed size
+//     }
+//   }
+// }
