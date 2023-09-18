@@ -1,12 +1,14 @@
 let rows = 7; // number of rows
 let cols = 7; // number of columns
 let spacing = 35; // spacing between points
-let shapeType = 'rect'; // shape type ('rect' or 'circle')
+let shapeType = 'rect'; // shape type ('rect' or 'circle' )
 let shapeSize = 20; // size of the shape
 let topLeftColor;
 let topRightColor;
 let bottomLeftColor;
 let bottomRightColor;
+
+let randShapeBool = false;
 
 let rowsSlider;
 let colsSlider;
@@ -77,11 +79,6 @@ function setup() {
   shapeButton.position(160, 294);
   shapeButton.mousePressed(toggleShapeType);
 
-  // Create button for random shape selection
-  randomShapeButton = createButton('Random Shape');
-  randomShapeButton.position(160, 324);
-  randomShapeButton.mousePressed(randomizeShapeType);
-
   // Create color picker and label for the background
   backgroundPicker = createColorPicker('#000000');
   backgroundPicker.position(160, 350);
@@ -98,10 +95,16 @@ function setup() {
   const strokeColorLabel = createP('Stroke Color');
   strokeColorLabel.position(20, 380);
 
-  idkValueSlider = createSlider(0, 100, 10);
-  idkValueSlider.position(160, 430);
-  const idkValueLabel = createP('IDK Value');
-  idkValueLabel.position(20, 400);
+  schmovementSlider = createSlider(0, 300, 10);
+  schmovementSlider.position(160, 430);
+  const schmovementLabel = createP('Schmovement');
+  schmovementLabel.position(20, 420);
+
+  speedSlider = createSlider(1, 20, 10);
+  speedSlider.position(160, 460);
+  const speedLabel = createP('Speed');
+  speedLabel.position(20, 450);
+
 
 
   // Create the graphics buffer
@@ -120,7 +123,8 @@ function draw() {
   spacing = spacingSlider.value();
   shapeSize = sizeSlider.value();
   strokeWeightVal = strokeWeightSlider.value();
-  idkValue = idkValueSlider.value();
+  schmoveVal = schmovementSlider.value();
+  userSpeed = speedSlider.value() * 3;
 
   const xOffset = (width - cols * spacing) / 2;
   const yOffset = (height - rows * spacing) / 2;
@@ -135,9 +139,9 @@ function draw() {
       let y = i * spacing + spacing / 2 + yOffset; // calculate y coordinate of shape
 
       // use Perlin noise to distort the position of the shape
-      const noiseVal = noise(x / width, y / height, frameCount * 0.005);
+      const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
       const angle = noiseVal * TWO_PI * 5;
-      const distortion = map(noiseVal, 0, 300, idkValue, spacing / 2);
+      const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
       x += distortion * cos(angle);
       y += distortion * sin(angle);
 
@@ -175,17 +179,21 @@ function draw() {
         rect(x, y, shapeSize, shapeSize);
       } else if (shapeType === 'circle') {
         ellipse(x, y, shapeSize, shapeSize);
+      } else if (shapeType === 'triangle') {
+        triangle(x, y, x + shapeSize, y, x + shapeSize / 2, y + shapeSize);
       }
     }
   }
 }
 
-// Toggle between rectangle mode and ellipse mode
+// Toggle between rectangle mode and ellipse mode and triangle
 function toggleShapeType() {
-  shapeType = shapeType === 'rect' ? 'circle' : 'rect';
+  if (shapeType === 'rect') {
+    shapeType = 'circle';
+  } else if (shapeType === 'circle') {
+    shapeType = 'triangle';
+  } else if (shapeType === 'triangle') {
+    shapeType = 'rect';
+  }
 }
 
-// Randomly choose between rectangle and circle for each shape
-function randomizeShapeType() {
-  shapeType = random(['rect', 'circle']);
-}
