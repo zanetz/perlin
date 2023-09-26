@@ -181,10 +181,56 @@ function draw() {
         ellipse(x, y, shapeSize, shapeSize);
       } else if (shapeType === 'triangle') {
         triangle(x, y, x + shapeSize, y, x + shapeSize / 2, y + shapeSize);
+      } else if (shapeType === 'line') {
+        line(x, y, x + shapeSize, y + shapeSize);
+      } else if (shapeType === 'hexagon') {
+        drawHexagon(x, y, shapeSize);
+      } else if (shapeType === 'star') {
+        drawStar(x, y, shapeSize / 2, shapeSize, 5);
+      } else if (shapeType === 'heart') {
+        drawHeart(x, y, shapeSize);
       }
     }
   }
 }
+
+// Custom function to draw a star
+function drawStar(x, y, radius1, radius2, npoints) {
+  let angle = TWO_PI / npoints;
+  let halfAngle = angle / 2.0;
+  beginShape();
+  for (let a = -PI/2; a < TWO_PI - PI/2; a += angle) {
+    let x1 = x + cos(a) * radius2;
+    let y1 = y + sin(a) * radius2;
+    vertex(x1, y1);
+    let x2 = x + cos(a + halfAngle) * radius1;
+    let y2 = y + sin(a + halfAngle) * radius1;
+    vertex(x2, y2);
+  }
+  endShape(CLOSE);
+}
+
+
+function drawHexagon(x, y, size) {
+  beginShape();
+  for (let i = 0; i < 6; i++) {
+    const angle = TWO_PI / 6 * i;
+    const xOffset = cos(angle) * size;
+    const yOffset = sin(angle) * size;
+    vertex(x + xOffset, y + yOffset);
+  }
+  endShape(CLOSE);
+}
+
+function drawHeart(x, y, size) {
+  beginShape();
+  vertex(x, y);
+  bezierVertex(x + size, y - size, x + 2 * size, y + size / 2, x, y + 2 * size);
+  bezierVertex(x - 2 * size, y + size / 2, x - size, y - size, x, y);
+  endShape(CLOSE);
+}
+
+
 
 // Toggle between rectangle mode and ellipse mode and triangle
 function toggleShapeType() {
@@ -193,6 +239,14 @@ function toggleShapeType() {
   } else if (shapeType === 'circle') {
     shapeType = 'triangle';
   } else if (shapeType === 'triangle') {
+    shapeType = 'line';
+  } else if (shapeType === 'line') {
+    shapeType = 'hexagon';
+  } else if (shapeType === 'hexagon') {
+    shapeType = 'star';
+  } else if (shapeType === 'star') {
+    shapeType = 'heart';
+  } else if (shapeType === 'heart') {
     shapeType = 'rect';
   }
 }
