@@ -189,6 +189,8 @@ function draw() {
         drawStar(x, y, shapeSize / 2, shapeSize, 5);
       } else if (shapeType === 'heart') {
         drawHeart(x, y, shapeSize);
+      } else if (shapeType === 'smiley') {
+        drawSmiley(x, y, shapeSize);
       }
     }
   }
@@ -247,7 +249,31 @@ function toggleShapeType() {
   } else if (shapeType === 'star') {
     shapeType = 'heart';
   } else if (shapeType === 'heart') {
+    shapeType = 'smiley';
+  } else if (shapeType === 'smiley') {
     shapeType = 'rect';
   }
+}
+
+
+function drawSmiley(x, y, size) {
+  // Draw the head (a yellow circle)
+  ellipse(x, y, size, size);
+
+  // Draw the eyes (two white circles)
+  fill(255);
+  ellipse(x - size / 4, y - size / 4, size / 5, size / 5);
+  ellipse(x + size / 4, y - size / 4, size / 5, size / 5);
+
+  // Draw the pupils (two black circles)
+  fill(0);
+  ellipse(x - size / 4, y - size / 4, size / 10, size / 10);
+  ellipse(x + size / 4, y - size / 4, size / 10, size / 10);
+
+  // Draw the mouth (an arc for a smile)
+  noFill();
+  stroke(0);
+  strokeWeight(3);
+  arc(x, y + size / 10, size / 2, size / 5, 0, PI);
 }
 
