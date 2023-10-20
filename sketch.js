@@ -8,6 +8,7 @@ let topRightColor;
 let bottomLeftColor;
 let bottomRightColor;
 
+
 let randShapeBool = false;
 
 let rowsSlider;
@@ -16,6 +17,8 @@ let spacingSlider;
 let sizeSlider;
 let strokeWeightSlider;
 let idkValueSlider;
+let canvasWidthSlider;
+let canvasHeightSlider;
 
 let buffer; // Graphics buffer
 
@@ -29,21 +32,25 @@ let bottomRightPicker;
 let strokeColorPicker;
 let backgroundPicker;
 
+
+
+
+
 function setup() {
-  createCanvas(600, 600); // create a canvas with width and height of 600 pixels
+  createCanvas(600, 600);
 
   // Create sliders and labels for rows, columns, spacing, and size
-  rowsSlider = createSlider(1, 100, rows);
+  rowsSlider = createSlider(1, 150, rows);
   rowsSlider.position(160, 14);
   const rowsLabel = createP('Rows');
   rowsLabel.position(20, 10);
 
-  colsSlider = createSlider(1, 100, cols);
+  colsSlider = createSlider(1, 150, cols);
   colsSlider.position(160, 44);
   const colsLabel = createP('Columns');
   colsLabel.position(20, 40);
 
-  spacingSlider = createSlider(1, 40, spacing);
+  spacingSlider = createSlider(1, 160, spacing);
   spacingSlider.position(160, 74);
   const spacingLabel = createP('Spacing');
   spacingLabel.position(20, 70);
@@ -105,6 +112,17 @@ function setup() {
   const speedLabel = createP('Speed');
   speedLabel.position(20, 450);
 
+  canvasWidthSlider = createSlider(100, 2000, 600);
+  canvasWidthSlider.position(160, 490);
+  const canvasWidthLabel = createP('Canvas Width');
+  canvasWidthLabel.position(20, 480);
+
+  canvasHeightSlider = createSlider(100, 2000, 600);
+  canvasHeightSlider.position(160, 520);
+  const canvasHeightLabel = createP('Canvas Height');
+  canvasHeightLabel.position(20, 510);
+
+
 
 
   // Create the graphics buffer
@@ -114,6 +132,12 @@ function setup() {
 }
 
 function draw() {
+
+   // Update the canvas size based on slider values
+   canvasWidth = canvasWidthSlider.value();
+   canvasHeight = canvasHeightSlider.value();
+   resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
+ 
   // set the background to black
   background(backgroundPicker.color());
 
