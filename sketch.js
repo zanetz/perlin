@@ -1,13 +1,12 @@
-let rows = 7; // number of rows
-let cols = 7; // number of columns
+let rows = 15; // number of rows
+let cols = 15; // number of columns
 let spacing = 35; // spacing between points
-let shapeType = 'rect'; // shape type ('rect' or 'circle' )
+let shapeType = 'line'; // shape type ('rect' or 'circle' )
 let shapeSize = 20; // size of the shape
 let topLeftColor;
 let topRightColor;
 let bottomLeftColor;
 let bottomRightColor;
-
 
 let randShapeBool = false;
 
@@ -32,7 +31,10 @@ let bottomRightPicker;
 let strokeColorPicker;
 let backgroundPicker;
 
-
+let strokeBottomLeft
+let strokeBottomRight
+let strokeTopLeft
+let strokeTopRight
 
 
 
@@ -92,15 +94,7 @@ function setup() {
   const backgroundLabel = createP('Background');
   backgroundLabel.position(20, 330);
 
-  strokeWeightSlider = createSlider(0, 10, 1);
-  strokeWeightSlider.position(160, 380);
-  const strokeWeightLabel = createP('Stroke Weight');
-  strokeWeightLabel.position(20, 360);
 
-  strokeColorPicker = createColorPicker('#FFFFFF');
-  strokeColorPicker.position(160, 404);
-  const strokeColorLabel = createP('Stroke Color');
-  strokeColorLabel.position(20, 380);
 
   schmovementSlider = createSlider(0, 300, 10);
   schmovementSlider.position(160, 430);
@@ -121,6 +115,39 @@ function setup() {
   canvasHeightSlider.position(160, 520);
   const canvasHeightLabel = createP('Canvas Height');
   canvasHeightLabel.position(20, 510);
+
+// stroke stuff
+  strokeTopLeftPicker = createColorPicker('#33ffdd')
+  strokeTopLeftPicker.position(160, 550);
+  const strokeTopLeftLabel = createP('Stroke Top Left');
+  strokeTopLeftLabel.position(20, 540);
+
+  strokeTopRightPicker = createColorPicker('#e633ff')
+  strokeTopRightPicker.position(160, 580);
+  const strokeTopRightLabel = createP('Stroke Top Right');
+  strokeTopRightLabel.position(20, 570);
+
+
+  strokeBottomLeftPicker = createColorPicker('#33ff4c')
+  strokeBottomLeftPicker.position(160, 610);
+  const strokeBottomLeftLabel = createP('Stroke Bottom Left');
+  strokeBottomLeftLabel.position(20, 600);
+
+
+  strokeBottomRightPicker = createColorPicker('#ffffff')
+  strokeBottomRightPicker.position(160, 640);
+  const strokeBottomRightLabel = createP('Stroke Bottom Right');
+  strokeBottomRightLabel.position(20, 630);
+
+  strokeWeightSlider = createSlider(0, 10, 10);
+  strokeWeightSlider.position(160, 380);
+  const strokeWeightLabel = createP('Stroke Weight');
+  strokeWeightLabel.position(20, 360);
+
+  strokeColorPicker = createColorPicker('#FFFFFF');
+  strokeColorPicker.position(160, 404);
+  const strokeColorLabel = createP('Stroke Color');
+  strokeColorLabel.position(20, 380);
 
 
 
@@ -193,9 +220,18 @@ function draw() {
       const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
       const colorFinal = lerpColor(colorTop, colorBottom, posy);
 
+      const strokeTopLeftColor = strokeTopLeftPicker.color()
+      const strokeTopRightColor = strokeTopRightPicker.color()
+      const strokeBottomLeftColor = strokeBottomLeftPicker.color()
+      const strokeBottomRightColor = strokeBottomRightPicker.color()
+      const stokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
+      const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
+      const strokeColorFinal = lerpColor(stokeColorTop, strokeColorBottom, posy);
+
+
       // set the fill color to the interpolated color
       fill(colorFinal);
-      stroke(strokeColorPicker.color());
+      stroke(strokeColorFinal);
       strokeWeight(strokeWeightVal);
 
       // draw shapes based on shapeType
@@ -258,7 +294,7 @@ function drawHeart(x, y, size) {
 
 
 
-// Toggle between rectangle mode and ellipse mode and triangle
+// Toggle between shapes
 function toggleShapeType() {
   if (shapeType === 'rect') {
     shapeType = 'circle';
