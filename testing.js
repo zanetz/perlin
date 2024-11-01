@@ -1,8 +1,8 @@
-let rows = 15; // number of rows
-let cols = 15; // number of columns
-let spacing = 35; // spacing between points
-let shapeType = 'line'; // shape type ('rect' or 'circle' )
-let shapeSize = 20; // size of the shape
+let rows = 40; // number of rows
+let cols = 40; // number of columns
+let spacing = 16; // spacing between points
+let shapeType = 'hexagon'; // shape type ('rect' or 'circle' )
+let shapeSize = 12; // size of the shape
 let topLeftColor;
 let topRightColor;
 let bottomLeftColor;
@@ -36,8 +36,7 @@ let strokeBottomRight
 let strokeTopLeft
 let strokeTopRight
 
-let drawButton;
-
+let useAltDraw = false;
 
 
 
@@ -66,22 +65,22 @@ function setup() {
   sizeLabel.position(20, 130);
 
   // Create color pickers and labels for each corner
-  topLeftPicker = createColorPicker('#FFFF00');
+  topLeftPicker = createColorPicker('#000000');
   topLeftPicker.position(160, 164);
   const topLeftLabel = createP('Top Left');
   topLeftLabel.position(20, 160);
 
-  topRightPicker = createColorPicker('#FF0000');
+  topRightPicker = createColorPicker('#000000');
   topRightPicker.position(160, 194);
   const topRightLabel = createP('Top Right');
   topRightLabel.position(20, 190);
 
-  bottomLeftPicker = createColorPicker('#0000FF');
+  bottomLeftPicker = createColorPicker('#000000');
   bottomLeftPicker.position(160, 224);
   const bottomLeftLabel = createP('Bottom Left');
   bottomLeftLabel.position(20, 220);
 
-  bottomRightPicker = createColorPicker('#00FF00');
+  bottomRightPicker = createColorPicker('#000000');
   bottomRightPicker.position(160, 254);
   const bottomRightLabel = createP('Bottom Right');
   bottomRightLabel.position(20, 250);
@@ -99,7 +98,7 @@ function setup() {
 
 
 
-  schmovementSlider = createSlider(0, 300, 10);
+  schmovementSlider = createSlider(0, 300, 150);
   schmovementSlider.position(160, 430);
   const schmovementLabel = createP('Schmovement');
   schmovementLabel.position(20, 420);
@@ -109,29 +108,29 @@ function setup() {
   const speedLabel = createP('Speed');
   speedLabel.position(20, 450);
 
-  canvasWidthSlider = createSlider(100, 2000, 600);
+  canvasWidthSlider = createSlider(100, 2000, 1500);
   canvasWidthSlider.position(160, 490);
   const canvasWidthLabel = createP('Canvas Width');
   canvasWidthLabel.position(20, 480);
 
-  canvasHeightSlider = createSlider(100, 2000, 600);
+  canvasHeightSlider = createSlider(100, 2000, 1200);
   canvasHeightSlider.position(160, 520);
   const canvasHeightLabel = createP('Canvas Height');
   canvasHeightLabel.position(20, 510);
 
 // stroke stuff
-  strokeTopLeftPicker = createColorPicker('#33ffdd')
+  strokeTopLeftPicker = createColorPicker('#f50707')
   strokeTopLeftPicker.position(160, 550);
   const strokeTopLeftLabel = createP('Stroke Top Left');
   strokeTopLeftLabel.position(20, 540);
 
-  strokeTopRightPicker = createColorPicker('#e633ff')
+  strokeTopRightPicker = createColorPicker('#1fff00')
   strokeTopRightPicker.position(160, 580);
   const strokeTopRightLabel = createP('Stroke Top Right');
   strokeTopRightLabel.position(20, 570);
 
 
-  strokeBottomLeftPicker = createColorPicker('#33ff4c')
+  strokeBottomLeftPicker = createColorPicker('#073df5')
   strokeBottomLeftPicker.position(160, 610);
   const strokeBottomLeftLabel = createP('Stroke Bottom Left');
   strokeBottomLeftLabel.position(20, 600);
@@ -142,7 +141,7 @@ function setup() {
   const strokeBottomRightLabel = createP('Stroke Bottom Right');
   strokeBottomRightLabel.position(20, 630);
 
-  strokeWeightSlider = createSlider(0, 10, 10);
+  strokeWeightSlider = createSlider(0, 10, 1);
   strokeWeightSlider.position(160, 380);
   const strokeWeightLabel = createP('Stroke Weight');
   strokeWeightLabel.position(20, 360);
@@ -152,56 +151,74 @@ function setup() {
   const strokeColorLabel = createP('Stroke Color');
   strokeColorLabel.position(20, 380);
 
-
+  const setValuesButton = createButton('Set Specific Values');
+  setValuesButton.position(160, 670); // Position the button below the sliders
+  setValuesButton.mousePressed(setSpecificValues);
 
 
   // Create the graphics buffer
   buffer = createGraphics(width, height);
 
-  // Add the button to draw a new pattern
-  drawButton = createButton('Draw New Pattern');
-  drawButton.position(160, 550);
-  drawButton.mousePressed(drawPattern);
-
-  // Draw the initial static pattern once
-  drawPattern();
-
+  let toggleButton = createButton('Toggle Draw Mode');
+  toggleButton.mousePressed(toggleDraw);
 
 }
 
-function drawPattern() {
-    // Update the canvas size based on slider values
-    let canvasWidth = canvasWidthSlider.value();
-    let canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
-  
-    // Set the background to black
-    background(backgroundPicker.color());
-  
-    // Update variables based on slider values
-    rows = rowsSlider.value();
-    cols = colsSlider.value();
-    spacing = spacingSlider.value();
-    shapeSize = sizeSlider.value();
-    strokeWeightVal = strokeWeightSlider.value();
-    schmoveVal = schmovementSlider.value();
-    userSpeed = speedSlider.value() * 3;
-  
-    const xOffset = (width - cols * spacing) / 2;
-    const yOffset = (height - rows * spacing) / 2;
-  
-    // Loop through each row and column to draw shapes
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        let x = j * spacing + spacing / 2 + xOffset; // Calculate x coordinate of shape
-        let y = i * spacing + spacing / 2 + yOffset; // Calculate y coordinate of shape
+function originalDraw() {
+  // Update the canvas size based on slider values
+  canvasWidth = canvasWidthSlider.value();
+  canvasHeight = canvasHeightSlider.value();
+  resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
 
-        const noiseVal = noise(x/width, y/height);
-        const angle = noiseVal * TWO_PI;
-        const distortion = map(noiseVal, 50, 100, schmoveVal, spacing/2);
-        const newX = x + distortion * cos(angle);
-        const newY = y + distortion * sin(angle);
-  
+  // Set the background to black
+  background(backgroundPicker.color());
+
+  // Update variables based on slider values
+  rows = rowsSlider.value();
+  cols = colsSlider.value();
+  spacing = spacingSlider.value();
+  shapeSize = sizeSlider.value();
+  strokeWeightVal = strokeWeightSlider.value();
+  schmoveVal = schmovementSlider.value();
+  userSpeed = speedSlider.value() * 3;
+
+  const xOffset = (width - cols * spacing) / 2;
+  const yOffset = (height - rows * spacing) / 2;
+
+  buffer.background(backgroundPicker.color());
+
+  // Loop through each row and column to draw shapes
+  for (let i = 0; i < rows; i++) {
+     for (let j = 0; j < cols; j++) {
+        let x = j * spacing + spacing / 2;
+        let y = i * spacing + spacing / 2;
+
+        // Determine which quadrant to draw in
+        if (i < rows / 2 && j < cols / 2) {
+           // Top-left quadrant
+           x += xOffset - width / 4;
+           y += yOffset - height / 4;
+        } else if (i < rows / 2 && j >= cols / 2) {
+           // Top-right quadrant
+           x += xOffset + width / 4;
+           y += yOffset - height / 4;
+        } else if (i >= rows / 2 && j < cols / 2) {
+           // Bottom-left quadrant
+           x += xOffset - width / 4;
+           y += yOffset + height / 4;
+        } else if (i >= rows / 2 && j >= cols / 2) {
+           // Bottom-right quadrant
+           x += xOffset + width / 4;
+           y += yOffset + height / 4;
+        }
+
+        // Apply Perlin noise for shape distortion
+        const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
+        const angle = noiseVal * TWO_PI * 5;
+        const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
+        x += distortion * cos(angle);
+        y += distortion * sin(angle);
+
         // Interpolate between colors based on position
         const posx = map(j, 0, cols - 1, 0, 1);
         const posy = map(i, 0, rows - 1, 0, 1);
@@ -212,7 +229,7 @@ function drawPattern() {
         const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
         const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
         const colorFinal = lerpColor(colorTop, colorBottom, posy);
-  
+
         const strokeTopLeftColor = strokeTopLeftPicker.color();
         const strokeTopRightColor = strokeTopRightPicker.color();
         const strokeBottomLeftColor = strokeBottomLeftPicker.color();
@@ -220,31 +237,34 @@ function drawPattern() {
         const strokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
         const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
         const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
-  
-        // Set the fill color to the interpolated color
+
+        // Set the fill and stroke colors
         fill(colorFinal);
         stroke(strokeColorFinal);
         strokeWeight(strokeWeightVal);
-  
+
         // Draw shapes based on shapeType
         if (shapeType === 'rect') {
-          rect(newX, newY, shapeSize, shapeSize);
+           rect(x, y, shapeSize, shapeSize);
         } else if (shapeType === 'circle') {
-          ellipse(newX, newY, shapeSize, shapeSize);
+           ellipse(x, y, shapeSize, shapeSize);
         } else if (shapeType === 'triangle') {
-          triangle(newX, newY, x + shapeSize, y, x + shapeSize / 2, y + shapeSize);
+           triangle(x, y, x + shapeSize, y, x + shapeSize / 2, y + shapeSize);
         } else if (shapeType === 'line') {
-          line(newX, newY, x + shapeSize, y + shapeSize);
+           line(x, y, x + shapeSize, y + shapeSize);
         } else if (shapeType === 'hexagon') {
-          drawHexagon(newX, newY, shapeSize);
+           drawHexagon(x, y, shapeSize);
         } else if (shapeType === 'star') {
-          drawStar(newX, newY, shapeSize / 2, shapeSize, 5);
+           drawStar(x, y, shapeSize / 2, shapeSize, 5);
         } else if (shapeType === 'heart') {
-          drawHeart(newX, newY, shapeSize);
+           drawHeart(x, y, shapeSize);
+        } else if (shapeType === 'smiley') {
+           drawSmiley(x, y, shapeSize);
         }
-      }
-    }
+     }
   }
+}
+
 
 
 
@@ -329,3 +349,133 @@ function drawSmiley(x, y, size) {
   arc(x, y + size / 10, size / 2, size / 5, 0, PI);
 }
 
+function setSpecificValues() {
+  // Set specific values for the sliders
+  rowsSlider.value(150); // Set rows to 50
+  colsSlider.value(3); // Set columns to 50
+  spacingSlider.value(1); // Set spacing to 20
+  sizeSlider.value(100); // Set shape size to 15
+  strokeWeightSlider.value(2); // Set stroke weight to 2
+  canvasWidthSlider.value(700); // Set canvas width to 800
+  canvasHeightSlider.value(500); // Set canvas height to 600
+  speedSlider.value(20)
+  schmovementSlider.value(300)
+
+  // Set shape type to a specific value, for example, "star"
+  shapeType = 'star';
+
+  // Redraw the canvas to apply changes
+  redraw();
+}
+
+
+function drawAlt() {
+
+  // Update the canvas size based on slider values
+  canvasWidth = canvasWidthSlider.value();
+  canvasHeight = canvasHeightSlider.value();
+  resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
+
+ // set the background to black
+ background(backgroundPicker.color());
+
+ // Update variables based on slider values
+ rows = rowsSlider.value();
+ cols = colsSlider.value();
+ spacing = spacingSlider.value();
+ shapeSize = sizeSlider.value();
+ strokeWeightVal = strokeWeightSlider.value();
+ schmoveVal = schmovementSlider.value();
+ userSpeed = speedSlider.value() * 3;
+
+ const xOffset = (width - cols * spacing) / 2;
+ const yOffset = (height - rows * spacing) / 2;
+
+ buffer.background(backgroundPicker.color());
+
+
+ // loop through each row and column to draw shapes
+ for (let i = 0; i < rows; i++) {
+   for (let j = 0; j < cols; j++) {
+     let x = j * spacing + spacing / 2 + xOffset; // calculate x coordinate of shape
+     let y = i * spacing + spacing / 2 + yOffset; // calculate y coordinate of shape
+
+     // use Perlin noise to distort the position of the shape
+     const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
+     const angle = noiseVal * TWO_PI * 5;
+     const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
+     x += distortion * cos(angle);
+     y += distortion * sin(angle);
+
+     // wrap shapes around the screen if they go off-screen
+     if (x < 0) {
+       x = width + x % width;
+     } else if (x > width) {
+       x = x % width;
+     }
+
+     if (y < 0) {
+       y = height + y % height;
+     } else if (y > height) {
+       y = y % height;
+     }
+
+     // interpolate between colors based on position
+     const posx = map(j, 0, cols - 1, 0, 1);
+     const posy = map(i, 0, rows - 1, 0, 1);
+     const colorTopLeft = topLeftPicker.color();
+     const colorTopRight = topRightPicker.color();
+     const colorBottomLeft = bottomLeftPicker.color();
+     const colorBottomRight = bottomRightPicker.color();
+     const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
+     const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
+     const colorFinal = lerpColor(colorTop, colorBottom, posy);
+
+     const strokeTopLeftColor = strokeTopLeftPicker.color()
+     const strokeTopRightColor = strokeTopRightPicker.color()
+     const strokeBottomLeftColor = strokeBottomLeftPicker.color()
+     const strokeBottomRightColor = strokeBottomRightPicker.color()
+     const stokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
+     const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
+     const strokeColorFinal = lerpColor(stokeColorTop, strokeColorBottom, posy);
+    
+
+     // set the fill color to the interpolated color
+     fill(colorFinal);
+     stroke(strokeColorFinal);
+     strokeWeight(strokeWeightVal);
+
+     // draw shapes based on shapeType
+     if (shapeType === 'rect') {
+       rect(x, y, shapeSize, shapeSize);
+     } else if (shapeType === 'circle') {
+       ellipse(x, y, shapeSize, shapeSize);
+     } else if (shapeType === 'triangle') {
+       triangle(x, y, x + shapeSize, y, x + shapeSize / 2, y + shapeSize);
+     } else if (shapeType === 'line') {
+       line(x, y, x + shapeSize, y + shapeSize);
+     } else if (shapeType === 'hexagon') {
+       drawHexagon(x, y, shapeSize);
+     } else if (shapeType === 'star') {
+       drawStar(x, y, shapeSize / 2, shapeSize, 5);
+     } else if (shapeType === 'heart') {
+       drawHeart(x, y, shapeSize);
+     } else if (shapeType === 'smiley') {
+       drawSmiley(x, y, shapeSize);
+     }
+   }
+ }
+}
+
+
+function toggleDraw() {
+  useAltDraw = !useAltDraw;
+}
+
+function draw() {
+  if (useAltDraw) {
+    drawAlt();
+  } else {
+    originalDraw(); // rename your current draw function as originalDraw
+  }
+}
