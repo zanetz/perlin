@@ -38,13 +38,26 @@ let strokeTopRight
 
 let useAltDraw = false;
 
+let isStriped = false; // Variable to control whether to draw stripes
 
+
+let tileSize = 150; // Size of each tile
+
+
+function drawTileBackground() {
+  for (let x = 0; x < width; x += tileSize) {
+    for (let y = 0; y < height; y += tileSize) {
+      fill(0,0,0, 150); // Random colors with some transparency
+      rect(x, y, tileSize, tileSize); // Draw the tile
+    }
+  }
+}
 
 function setup() {
   createCanvas(600, 600);
 
   // Create sliders and labels for rows, columns, spacing, and size
-  rowsSlider = createSlider(1, 150, rows);
+  rowsSlider = createSlider(1, 300, rows);
   rowsSlider.position(160, 14);
   const rowsLabel = createP('Rows');
   rowsLabel.position(20, 10);
@@ -98,7 +111,7 @@ function setup() {
 
 
 
-  schmovementSlider = createSlider(0, 300, 150);
+  schmovementSlider = createSlider(0, 900, 150);
   schmovementSlider.position(160, 430);
   const schmovementLabel = createP('Schmovement');
   schmovementLabel.position(20, 420);
@@ -108,12 +121,12 @@ function setup() {
   const speedLabel = createP('Speed');
   speedLabel.position(20, 450);
 
-  canvasWidthSlider = createSlider(100, 2000, 1500);
+  canvasWidthSlider = createSlider(100, 3000, 1500);
   canvasWidthSlider.position(160, 490);
   const canvasWidthLabel = createP('Canvas Width');
   canvasWidthLabel.position(20, 480);
 
-  canvasHeightSlider = createSlider(100, 2000, 1200);
+  canvasHeightSlider = createSlider(100, 3000, 1200);
   canvasHeightSlider.position(160, 520);
   const canvasHeightLabel = createP('Canvas Height');
   canvasHeightLabel.position(20, 510);
@@ -151,9 +164,13 @@ function setup() {
   const strokeColorLabel = createP('Stroke Color');
   strokeColorLabel.position(20, 380);
 
-  const setValuesButton = createButton('Set Specific Values');
-  setValuesButton.position(160, 670); // Position the button below the sliders
-  setValuesButton.mousePressed(setSpecificValues);
+  const setStarSnakesButton = createButton('star snakes');
+  setStarSnakesButton.position(160, 670); // Position the button below the sliders
+  setStarSnakesButton.mousePressed(setStarSnakes);
+
+  const setOneSnake = createButton('one');
+  setOneSnake.position(160, 700); // Position the button below the sliders
+  setOneSnake.mousePressed(OneSnake);
 
 
   // Create the graphics buffer
@@ -172,7 +189,10 @@ function originalDraw() {
 
   // Set the background to black
   background(backgroundPicker.color());
-
+  //drawTileBackground(); // Call the function to draw the tile background
+  
+  // Draw other shapes or elements on top of the background
+  
   // Update variables based on slider values
   rows = rowsSlider.value();
   cols = colsSlider.value();
@@ -243,29 +263,30 @@ function originalDraw() {
         stroke(strokeColorFinal);
         strokeWeight(strokeWeightVal);
 
-        // Draw shapes based on shapeType
-        if (shapeType === 'rect') {
-           rect(x, y, shapeSize, shapeSize);
-        } else if (shapeType === 'circle') {
-           ellipse(x, y, shapeSize, shapeSize);
-        } else if (shapeType === 'triangle') {
-           triangle(x, y, x + shapeSize, y, x + shapeSize / 2, y + shapeSize);
-        } else if (shapeType === 'line') {
-           line(x, y, x + shapeSize, y + shapeSize);
-        } else if (shapeType === 'hexagon') {
-           drawHexagon(x, y, shapeSize);
-        } else if (shapeType === 'star') {
-           drawStar(x, y, shapeSize / 2, shapeSize, 5);
-        } else if (shapeType === 'heart') {
-           drawHeart(x, y, shapeSize);
-        } else if (shapeType === 'smiley') {
-           drawSmiley(x, y, shapeSize);
-        }
+        drawShape(shapeType, x, y, shapeSize);
      }
   }
 }
 
-
+function drawShape(shapeType, x, y, size) {
+  if (shapeType === 'rect') {
+     rect(x, y, size, size);
+  } else if (shapeType === 'circle') {
+     ellipse(x, y, size, size);
+  } else if (shapeType === 'triangle') {
+     triangle(x, y, x + size, y, x + size / 2, y + size);
+  } else if (shapeType === 'line') {
+     line(x, y, x + size, y + size);
+  } else if (shapeType === 'hexagon') {
+     drawHexagon(x, y, size);
+  } else if (shapeType === 'star') {
+     drawStar(x, y, size / 2, size, 5);
+  } else if (shapeType === 'heart') {
+     drawHeart(x, y, size);
+  } else if (shapeType === 'smiley') {
+     drawSmiley(x, y, size);
+  }
+}
 
 
 // Custom function to draw a star
@@ -349,7 +370,7 @@ function drawSmiley(x, y, size) {
   arc(x, y + size / 10, size / 2, size / 5, 0, PI);
 }
 
-function setSpecificValues() {
+function setStarSnakes() {
   // Set specific values for the sliders
   rowsSlider.value(150); // Set rows to 50
   colsSlider.value(3); // Set columns to 50
@@ -368,6 +389,24 @@ function setSpecificValues() {
   redraw();
 }
 
+function OneSnake() {
+  // Set specific values for the sliders
+  rowsSlider.value(200); // Set rows to 50
+  colsSlider.value(3); // Set columns to 50
+  spacingSlider.value(4); // Set spacing to 20
+  sizeSlider.value(100); // Set shape size to 15
+  strokeWeightSlider.value(2); // Set stroke weight to 2
+  canvasWidthSlider.value(1800); // Set canvas width to 800
+  canvasHeightSlider.value(1500); // Set canvas height to 600
+  speedSlider.value(3)
+  schmovementSlider.value(300)
+
+  // Set shape type to a specific value, for example, "star"
+  shapeType = 'star';
+
+  // Redraw the canvas to apply changes
+  redraw();
+}
 
 function drawAlt() {
 
@@ -441,28 +480,18 @@ function drawAlt() {
     
 
      // set the fill color to the interpolated color
+     
+  
+     fill(colorFinal); // Normal fill
+     stroke(strokeColorFinal);
+     strokeWeight(strokeWeightVal);
+
+     // Set the fill and stroke colors
      fill(colorFinal);
      stroke(strokeColorFinal);
      strokeWeight(strokeWeightVal);
 
-     // draw shapes based on shapeType
-     if (shapeType === 'rect') {
-       rect(x, y, shapeSize, shapeSize);
-     } else if (shapeType === 'circle') {
-       ellipse(x, y, shapeSize, shapeSize);
-     } else if (shapeType === 'triangle') {
-       triangle(x, y, x + shapeSize, y, x + shapeSize / 2, y + shapeSize);
-     } else if (shapeType === 'line') {
-       line(x, y, x + shapeSize, y + shapeSize);
-     } else if (shapeType === 'hexagon') {
-       drawHexagon(x, y, shapeSize);
-     } else if (shapeType === 'star') {
-       drawStar(x, y, shapeSize / 2, shapeSize, 5);
-     } else if (shapeType === 'heart') {
-       drawHeart(x, y, shapeSize);
-     } else if (shapeType === 'smiley') {
-       drawSmiley(x, y, shapeSize);
-     }
+     drawShape(shapeType, x, y, shapeSize);
    }
  }
 }
@@ -479,3 +508,5 @@ function draw() {
     originalDraw(); // rename your current draw function as originalDraw
   }
 }
+
+
