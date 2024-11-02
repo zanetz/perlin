@@ -1,179 +1,4 @@
-function originalDraw() {
-    // Update the canvas size based on slider values
-    canvasWidth = canvasWidthSlider.value();
-    canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
-  
-    // Set the background to black
-    background(backgroundPicker.color());
-    //drawTileBackground(); // Call the function to draw the tile background
-    
-    // Draw other shapes or elements on top of the background
-    
-    // Update variables based on slider values
-    rows = rowsSlider.value();
-    cols = colsSlider.value();
-    spacing = spacingSlider.value();
-    shapeSize = sizeSlider.value();
-    strokeWeightVal = strokeWeightSlider.value();
-    schmoveVal = schmovementSlider.value();
-    userSpeed = speedSlider.value() * 3;
-  
-    const xOffset = (width - cols * spacing) / 2;
-    const yOffset = (height - rows * spacing) / 2;
-  
-    buffer.background(backgroundPicker.color());
-  
-    // Loop through each row and column to draw shapes
-    for (let i = 0; i < rows; i++) {
-       for (let j = 0; j < cols; j++) {
-          let x = j * spacing + spacing / 2;
-          let y = i * spacing + spacing / 2;
-  
-          // Determine which quadrant to draw in
-          if (i < rows / 2 && j < cols / 2) {
-             // Top-left quadrant
-             x += xOffset - width / 4;
-             y += yOffset - height / 4;
-          } else if (i < rows / 2 && j >= cols / 2) {
-             // Top-right quadrant
-             x += xOffset + width / 4;
-             y += yOffset - height / 4;
-          } else if (i >= rows / 2 && j < cols / 2) {
-             // Bottom-left quadrant
-             x += xOffset - width / 4;
-             y += yOffset + height / 4;
-          } else if (i >= rows / 2 && j >= cols / 2) {
-             // Bottom-right quadrant
-             x += xOffset + width / 4;
-             y += yOffset + height / 4;
-          }
-  
-          // Apply Perlin noise for shape distortion
-          const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
-          const angle = noiseVal * TWO_PI * 5;
-          const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
-          x += distortion * cos(angle);
-          y += distortion * sin(angle);
-  
-          // Interpolate between colors based on position
-          const posx = map(j, 0, cols - 1, 0, 1);
-          const posy = map(i, 0, rows - 1, 0, 1);
-          const colorTopLeft = topLeftPicker.color();
-          const colorTopRight = topRightPicker.color();
-          const colorBottomLeft = bottomLeftPicker.color();
-          const colorBottomRight = bottomRightPicker.color();
-          const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
-          const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
-          const colorFinal = lerpColor(colorTop, colorBottom, posy);
-  
-          const strokeTopLeftColor = strokeTopLeftPicker.color();
-          const strokeTopRightColor = strokeTopRightPicker.color();
-          const strokeBottomLeftColor = strokeBottomLeftPicker.color();
-          const strokeBottomRightColor = strokeBottomRightPicker.color();
-          const strokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
-          const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
-          const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
-  
-          // Set the fill and stroke colors
-          fill(colorFinal);
-          stroke(strokeColorFinal);
-          strokeWeight(strokeWeightVal);
-  
-          drawShape(shapeType, x, y, shapeSize);
-       }
-    }
-}
-  
 
-
-function drawAlt() {
-
-    // Update the canvas size based on slider values
-    canvasWidth = canvasWidthSlider.value();
-    canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
-  
-   // set the background to black
-   background(backgroundPicker.color());
-  
-   // Update variables based on slider values
-   rows = rowsSlider.value();
-   cols = colsSlider.value();
-   spacing = spacingSlider.value();
-   shapeSize = sizeSlider.value();
-   strokeWeightVal = strokeWeightSlider.value();
-   schmoveVal = schmovementSlider.value();
-   userSpeed = speedSlider.value() * 3;
-  
-   const xOffset = (width - cols * spacing) / 2;
-   const yOffset = (height - rows * spacing) / 2;
-  
-   buffer.background(backgroundPicker.color());
-  
-  
-   // loop through each row and column to draw shapes
-   for (let i = 0; i < rows; i++) {
-     for (let j = 0; j < cols; j++) {
-       let x = j * spacing + spacing / 2 + xOffset; // calculate x coordinate of shape
-       let y = i * spacing + spacing / 2 + yOffset; // calculate y coordinate of shape
-  
-       // use Perlin noise to distort the position of the shape
-       const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
-       const angle = noiseVal * TWO_PI * 5;
-       const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
-       x += distortion * cos(angle);
-       y += distortion * sin(angle);
-  
-       // wrap shapes around the screen if they go off-screen
-       if (x < 0) {
-         x = width + x % width;
-       } else if (x > width) {
-         x = x % width;
-       }
-  
-       if (y < 0) {
-         y = height + y % height;
-       } else if (y > height) {
-         y = y % height;
-       }
-  
-       // interpolate between colors based on position
-       const posx = map(j, 0, cols - 1, 0, 1);
-       const posy = map(i, 0, rows - 1, 0, 1);
-       const colorTopLeft = topLeftPicker.color();
-       const colorTopRight = topRightPicker.color();
-       const colorBottomLeft = bottomLeftPicker.color();
-       const colorBottomRight = bottomRightPicker.color();
-       const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
-       const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
-       const colorFinal = lerpColor(colorTop, colorBottom, posy);
-  
-       const strokeTopLeftColor = strokeTopLeftPicker.color()
-       const strokeTopRightColor = strokeTopRightPicker.color()
-       const strokeBottomLeftColor = strokeBottomLeftPicker.color()
-       const strokeBottomRightColor = strokeBottomRightPicker.color()
-       const stokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
-       const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
-       const strokeColorFinal = lerpColor(stokeColorTop, strokeColorBottom, posy);
-      
-  
-       // set the fill color to the interpolated color
-       
-    
-       fill(colorFinal); // Normal fill
-       stroke(strokeColorFinal);
-       strokeWeight(strokeWeightVal);
-  
-       // Set the fill and stroke colors
-       fill(colorFinal);
-       stroke(strokeColorFinal);
-       strokeWeight(strokeWeightVal);
-  
-       drawShape(shapeType, x, y, shapeSize);
-     }
-   }
-}
 
 function drawPulse() {
     // Update the canvas size based on slider values
@@ -423,3 +248,17 @@ function draw2() {
         }
     }
 }
+
+function d12() {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        let x = j * spacing;
+        let y = i * spacing;
+        const angle = noise(x * 0.01, y * 0.01, frameCount * 0.01) * TWO_PI;
+        const movement = map(noise(x * 0.02, y * 0.02, frameCount * 0.02), 0, 1, -5, 5);
+        x += cos(angle) * movement;
+        y += sin(angle) * movement;
+        drawShape(shapeType, x, y, shapeSize);
+      }
+    }
+  }

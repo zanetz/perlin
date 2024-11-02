@@ -1,3 +1,12 @@
+const shapeTypes = ['rect', 'circle', 'triangle', 'line', 'pentagon', 'hexagon', 'star', 'heart', 'smiley', 'flower'];
+let shapeIndex = 0;
+
+function toggleShapeType() {
+  shapeIndex = (shapeIndex + 1) % shapeTypes.length;
+  shapeType = shapeTypes[shapeIndex];
+}
+
+
 function drawShape(shapeType, x, y, size) {
     if (shapeType === 'rect') {
        rect(x, y, size, size);
@@ -15,8 +24,13 @@ function drawShape(shapeType, x, y, size) {
        drawHeart(x, y, size);
     } else if (shapeType === 'smiley') {
        drawSmiley(x, y, size);
-    }
-  }
+    } else if (shapeType === 'pentagon') {
+      drawPentagon(x, y, size);
+    }else if (shapeType === 'flower') {
+      drawFlower(x, y, size)
+    } 
+  
+}
   
   
   // Custom function to draw a star
@@ -55,28 +69,6 @@ function drawShape(shapeType, x, y, size) {
     endShape(CLOSE);
   }
   
-  
-  
-  // Toggle between shapes
-  function toggleShapeType() {
-    if (shapeType === 'rect') {
-      shapeType = 'circle';
-    } else if (shapeType === 'circle') {
-      shapeType = 'triangle';
-    } else if (shapeType === 'triangle') {
-      shapeType = 'line';
-    } else if (shapeType === 'line') {
-      shapeType = 'hexagon';
-    } else if (shapeType === 'hexagon') {
-      shapeType = 'star';
-    } else if (shapeType === 'star') {
-      shapeType = 'heart';
-    } else if (shapeType === 'heart') {
-      shapeType = 'smiley';
-    } else if (shapeType === 'smiley') {
-      shapeType = 'rect';
-    }
-  }
   
   
   function drawSmiley(x, y, size) {
@@ -126,7 +118,7 @@ function drawShape(shapeType, x, y, size) {
     spacingSlider.value(4); // Set spacing to 20
     sizeSlider.value(100); // Set shape size to 15
     strokeWeightSlider.value(2); // Set stroke weight to 2
-    canvasWidthSlider.value(1800); // Set canvas width to 800
+    canvasWidthSlider.value(1700); // Set canvas width to 800
     canvasHeightSlider.value(1500); // Set canvas height to 600
     speedSlider.value(3)
     schmovementSlider.value(300)
@@ -137,3 +129,31 @@ function drawShape(shapeType, x, y, size) {
     // Redraw the canvas to apply changes
     redraw();
   }
+
+
+  function drawPentagon(x, y, size) {
+    beginShape();
+    for (let i = 0; i < 5; i++) { // Loop 5 times for a pentagon
+      const angle = TWO_PI / 5 * i; // Divide the full circle by 5 for a pentagon
+      const xOffset = cos(angle) * size;
+      const yOffset = sin(angle) * size;
+      vertex(x + xOffset, y + yOffset);
+    }
+    endShape(CLOSE);
+  }
+
+  function drawFlower(x, y, size, nPetals = 6) {
+    const petalSize = size / 2;
+    for (let i = 0; i < nPetals; i++) {
+      const angle = TWO_PI / nPetals * i;
+      const xOffset = cos(angle) * size;
+      const yOffset = sin(angle) * size;
+      ellipse(x + xOffset, y + yOffset, petalSize, petalSize);
+    }
+    // Draw the center of the flower
+    fill(255, 204, 0); // yellow center
+    ellipse(x, y, petalSize / 2, petalSize / 2);
+    fill(255); // Reset to white for other shapes
+  }
+
+  
