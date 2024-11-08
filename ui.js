@@ -91,7 +91,7 @@ function initializeUI() {
     const canvasHeightLabel = createP('Canvas Height');
     canvasHeightLabel.position(20, 510);
 
-    pulseSlider = createSlider(0, 50, 0)
+    pulseSlider = createSlider(-50, 50, 0)
     pulseSlider.position(160, 730);
     const pulseLabel = createP('Pulse')
     pulseLabel.position(20, 720);

@@ -35,7 +35,8 @@ function drawPulse() {
             let distFromCenter = dist(x, y, centerX, centerY);
 
             // Create a pulsating effect by altering shape size based on distance and time
-            let pulsateSize = shapeSize + sin(frameCount * 0.05 + distFromCenter * 0.01) * userPulse;
+            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
+            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
 
             // Interpolate between colors based on position
             const posx = map(j, 0, cols - 1, 0, 1);
@@ -110,7 +111,8 @@ function draw1() {
             let distFromCenter = dist(x, y, centerX, centerY);
 
             // Create a pulsating size based on distance and time
-            let pulsateSize = shapeSize + sin(frameCount * 0.05 + distFromCenter * 0.01) * userPulse;
+            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
+            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
 
             // Wrap shapes around the screen if they go off-screen
             if (x < 0) {
@@ -216,8 +218,8 @@ function draw2() {
             // Distance from the center for pulsating effect
             let distFromCenter = dist(x, y, centerX, centerY);
 
-            // Create a pulsating size based on distance and time
-            let pulsateSize = shapeSize + sin(frameCount * 0.05 + distFromCenter * 0.01) * userPulse;
+            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
+            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
 
             // Interpolate between colors based on position
             const posx = map(j, 0, cols - 1, 0, 1);
@@ -248,17 +250,3 @@ function draw2() {
         }
     }
 }
-
-function d12() {
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        let x = j * spacing;
-        let y = i * spacing;
-        const angle = noise(x * 0.01, y * 0.01, frameCount * 0.01) * TWO_PI;
-        const movement = map(noise(x * 0.02, y * 0.02, frameCount * 0.02), 0, 1, -5, 5);
-        x += cos(angle) * movement;
-        y += sin(angle) * movement;
-        drawShape(shapeType, x, y, shapeSize);
-      }
-    }
-  }
