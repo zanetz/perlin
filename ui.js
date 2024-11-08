@@ -60,6 +60,16 @@ function initializeUI() {
   // const strokeColorLabel = createP('Stroke Color');
   // strokeColorLabel.position(20, 380);
 
+     // Add the randomize fill colors button
+    const randomizeFillColorsButton = createButton('Randomize Fill Colors');
+    randomizeFillColorsButton.position(160, 800);
+    randomizeFillColorsButton.mousePressed(randomizeFillColors);
+
+    // Add the randomize stroke colors button
+    const randomizeStrokeColorsButton = createButton('Randomize Stroke Colors');
+    randomizeStrokeColorsButton.position(160, 830);
+    randomizeStrokeColorsButton.mousePressed(randomizeStrokeColors);
+
   initializeAdditionalUI(); // Call additional UI initialization
 }
 
@@ -121,4 +131,25 @@ function initializeStrokeColorPickers() {
   strokeBottomRightPicker.position(230, 620);
   //const strokeBottomRightLabel = createP('Stroke Bottom Right');
   //strokeBottomRightLabel.position(300, 600);
+}
+
+// Function to generate a random color
+function getRandomColor() {
+  return color(random(255), random(255), random(255));
+}
+
+// Function to randomize all shape fill colors
+function randomizeFillColors() {
+  topLeftPicker.value(getRandomColor().toString('#rrggbb'));
+  topRightPicker.value(getRandomColor().toString('#rrggbb'));
+  bottomLeftPicker.value(getRandomColor().toString('#rrggbb'));
+  bottomRightPicker.value(getRandomColor().toString('#rrggbb'));
+}
+
+// Function to randomize all stroke colors
+function randomizeStrokeColors() {
+  strokeTopLeftPicker.value(getRandomColor().toString('#rrggbb'));
+  strokeTopRightPicker.value(getRandomColor().toString('#rrggbb'));
+  strokeBottomLeftPicker.value(getRandomColor().toString('#rrggbb'));
+  strokeBottomRightPicker.value(getRandomColor().toString('#rrggbb'));
 }

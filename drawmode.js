@@ -251,3 +251,91 @@ function draw2() {
     }
 }
 
+function draw3() {
+    // Update the canvas size based on slider values
+    canvasWidth = canvasWidthSlider.value();
+    canvasHeight = canvasHeightSlider.value();
+    resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
+
+    // Set the background to the selected color
+    background(backgroundPicker.color());
+
+    // Update variables based on slider values
+    rows = rowsSlider.value();
+    cols = colsSlider.value();
+    spacing = spacingSlider.value();
+    shapeSize = sizeSlider.value();
+    strokeWeightVal = strokeWeightSlider.value();
+    schmoveVal = schmovementSlider.value();
+    userSpeed = speedSlider.value() * 3;
+    userPulse = pulseSlider.value();
+
+    // Get the number of sections from a slider or input
+    const numSections = strokeWeightVal; // e.g., create a slider to set the number of sections
+    const sectionWidth = width / numSections;
+    const sectionHeight = height / numSections;
+    const xOffset = (width - cols * spacing) / 2;
+    const yOffset = (height - rows * spacing) / 2;
+
+    // Center coordinates for the pulse effect
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Loop through each row and column to draw shapes
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            let x = j * spacing + spacing / 2 + xOffset; // Calculate x coordinate of shape
+            let y = i * spacing + spacing / 2 + yOffset; // Calculate y coordinate of shape
+
+            // Determine which section to draw in
+            const sectionRow = Math.floor(i / (rows / numSections));
+            const sectionCol = Math.floor(j / (cols / numSections));
+
+            // Offset the position based on the section
+            x += (sectionCol - (numSections - 1) / 2) * sectionWidth;
+            y += (sectionRow - (numSections - 1) / 2) * sectionHeight;
+
+            // Use Perlin noise to distort the position of the shape
+            const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
+            const angle = noiseVal * TWO_PI * 5;
+            const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
+            x += distortion * cos(angle);
+            y += distortion * sin(angle);
+
+            // Distance from the center for pulsating effect
+            let distFromCenter = dist(x, y, centerX, centerY);
+
+            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
+            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
+
+            // Interpolate between colors based on position
+            const posx = map(j, 0, cols - 1, 0, 1);
+            const posy = map(i, 0, rows - 1, 0, 1);
+            const colorTopLeft = topLeftPicker.color();
+            const colorTopRight = topRightPicker.color();
+            const colorBottomLeft = bottomLeftPicker.color();
+            const colorBottomRight = bottomRightPicker.color();
+            const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
+            const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
+            const colorFinal = lerpColor(colorTop, colorBottom, posy);
+
+            const strokeTopLeftColor = strokeTopLeftPicker.color();
+            const strokeTopRightColor = strokeTopRightPicker.color();
+            const strokeBottomLeftColor = strokeBottomLeftPicker.color();
+            const strokeBottomRightColor = strokeBottomRightPicker.color();
+            const strokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
+            const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
+            const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
+
+            // Set the fill and stroke colors
+            fill(colorFinal);
+            stroke(strokeColorFinal);
+            strokeWeight(strokeWeightVal);
+
+            // Draw the shape with pulsating size
+            drawShape(shapeType, x, y, pulsateSize);
+        }
+    }
+}
+
+

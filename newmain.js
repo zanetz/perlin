@@ -18,7 +18,7 @@ let isStriped = false; // Variable to control whether to draw stripes
 let tileSize = 150; // Size of each tile
 
 
-let drawFunctions = [draw1, drawPulse,  draw2]; // Array of draw functions
+let drawFunctions = [draw1, drawPulse, draw2]; // Array of draw functions
 let currentDrawIndex = 0; // Index to keep track of the current draw function
 
 function setup() {
