@@ -20,26 +20,8 @@ function initializeUI() {
   const sizeLabel = createP('Size');
   sizeLabel.position(20, 130);
 
-  // Color Picker Grid - 2x2 layout
-  topLeftPicker = createColorPicker('#000000');
-  topLeftPicker.position(160, 170);
-  const topLeftLabel = createP('Shape Color');
-  topLeftLabel.position(20, 190);
-
-  topRightPicker = createColorPicker('#000000');
-  topRightPicker.position(230, 170);
- // const topRightLabel = createP('Top Right');
-  //topRightLabel.position(300, 150);
-
-  bottomLeftPicker = createColorPicker('#000000');
-  bottomLeftPicker.position(160, 220);
-  // const bottomLeftLabel = createP('Bottom Left');
-  // bottomLeftLabel.position(50, 200);
-
-  bottomRightPicker = createColorPicker('#000000');
-  bottomRightPicker.position(230, 220);
-  // const bottomRightLabel = createP('Bottom Right');
-  // bottomRightLabel.position(300, 200);
+ 
+  
 
   shapeButton = createButton('Toggle Shape');
   shapeButton.position(160, 294);
@@ -55,22 +37,28 @@ function initializeUI() {
   const strokeWeightLabel = createP('Outline Weight');
   strokeWeightLabel.position(20, 360);
 
-  // strokeColorPicker = createColorPicker('#FFFFFF');
-  // strokeColorPicker.position(160, 404);
-  // const strokeColorLabel = createP('Stroke Color');
-  // strokeColorLabel.position(20, 380);
 
-     // Add the randomize fill colors button
-    const randomizeFillColorsButton = createButton('Randomize Fill Colors');
-    randomizeFillColorsButton.position(160, 800);
-    randomizeFillColorsButton.mousePressed(randomizeFillColors);
+  const randomizeFillColorsButton = createButton('Randomize Fill Colors');
+  randomizeFillColorsButton.position(160, 800);
+  randomizeFillColorsButton.mousePressed(randomizeFillColors);
+  
+  const randomizeStrokeColorsButton = createButton('Randomize Stroke Colors');
+  randomizeStrokeColorsButton.position(160, 830);
+  randomizeStrokeColorsButton.mousePressed(randomizeStrokeColors);
 
-    // Add the randomize stroke colors button
-    const randomizeStrokeColorsButton = createButton('Randomize Stroke Colors');
-    randomizeStrokeColorsButton.position(160, 830);
-    randomizeStrokeColorsButton.mousePressed(randomizeStrokeColors);
+  const randomizeBackgroundColorButton = createButton('Randomize Background Color');
+  randomizeBackgroundColorButton.position(160, 860);
+  randomizeBackgroundColorButton.mousePressed(randomizeBackgroundColor);
 
-  initializeAdditionalUI(); // Call additional UI initialization
+  const blackFillButton = createButton('Set fill to black');
+  blackFillButton.position(160, 900);
+  blackFillButton.mousePressed(blackFill);
+
+  const blackBorderButton = createButton('Set border to black');
+  blackBorderButton.position(160, 930);
+  blackBorderButton.mousePressed(blackBorder);
+
+  initializeAdditionalUI();
 }
 
 function initializeAdditionalUI() {
@@ -107,10 +95,11 @@ function initializeAdditionalUI() {
   const pulseLabel = createP('Pulse');
   pulseLabel.position(20, 720);
 
-  // Stroke color pickers in 2x2 grid layout
+  initializeFillColorPickers();
   initializeStrokeColorPickers();
 }
 
+// Stroke color pickers in 2x2 grid layout
 function initializeStrokeColorPickers() {
   strokeTopLeftPicker = createColorPicker('#f50707');
   strokeTopLeftPicker.position(160, 570);
@@ -119,26 +108,35 @@ function initializeStrokeColorPickers() {
 
   strokeTopRightPicker = createColorPicker('#1fff00');
   strokeTopRightPicker.position(230, 570);
-  //const strokeTopRightLabel = createP('Stroke Top Right');
-  //strokeTopRightLabel.position(300, 550);
-
+  
   strokeBottomLeftPicker = createColorPicker('#073df5');
   strokeBottomLeftPicker.position(160, 620);
-  //const strokeBottomLeftLabel = createP('Stroke Bottom Left');
-  //strokeBottomLeftLabel.position(50, 600);
-
+  
   strokeBottomRightPicker = createColorPicker('#ffffff');
   strokeBottomRightPicker.position(230, 620);
-  //const strokeBottomRightLabel = createP('Stroke Bottom Right');
-  //strokeBottomRightLabel.position(300, 600);
 }
 
-// Function to generate a random color
+function initializeFillColorPickers(){
+  topLeftPicker = createColorPicker('#000000');
+  topLeftPicker.position(160, 170);
+  const topLeftLabel = createP('Shape Color');
+  topLeftLabel.position(20, 190);
+
+  topRightPicker = createColorPicker('#000000');
+  topRightPicker.position(230, 170);
+
+  bottomLeftPicker = createColorPicker('#000000');
+  bottomLeftPicker.position(160, 220);
+
+  bottomRightPicker = createColorPicker('#000000');
+  bottomRightPicker.position(230, 220);
+}
+
 function getRandomColor() {
   return color(random(255), random(255), random(255));
 }
 
-// Function to randomize all shape fill colors
+
 function randomizeFillColors() {
   topLeftPicker.value(getRandomColor().toString('#rrggbb'));
   topRightPicker.value(getRandomColor().toString('#rrggbb'));
@@ -146,10 +144,31 @@ function randomizeFillColors() {
   bottomRightPicker.value(getRandomColor().toString('#rrggbb'));
 }
 
-// Function to randomize all stroke colors
+
 function randomizeStrokeColors() {
   strokeTopLeftPicker.value(getRandomColor().toString('#rrggbb'));
   strokeTopRightPicker.value(getRandomColor().toString('#rrggbb'));
   strokeBottomLeftPicker.value(getRandomColor().toString('#rrggbb'));
   strokeBottomRightPicker.value(getRandomColor().toString('#rrggbb'));
+}
+
+
+function randomizeBackgroundColor() {
+  backgroundPicker.value(getRandomColor().toString('#rrggbb'));
+}
+
+
+function blackFill() {
+  topLeftPicker.value('#000000');
+  topRightPicker.value('#000000');
+  bottomLeftPicker.value("#000000")
+  bottomRightPicker.value("#000000")
+}
+
+
+function blackBorder() {
+  strokeTopLeftPicker.value('#000000');
+  strokeTopRightPicker.value('#000000');
+  strokeBottomLeftPicker.value("#000000")
+  strokeBottomRightPicker.value("#000000")
 }
