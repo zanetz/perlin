@@ -1,3 +1,39 @@
+let colorMap = []; // To store fill colors
+let strokeColorMap = []; // To store stroke colors
+
+
+function generateColorMaps() {
+    // Ensure the color map arrays have the right number of rows
+    while (colorMap.length < rows) colorMap.push([]);
+    while (strokeColorMap.length < rows) strokeColorMap.push([]);
+    
+    // Ensure each row has the correct number of columns
+    for (let i = 0; i < rows; i++) {
+        while (colorMap[i].length < cols) colorMap[i].push(null);
+        while (strokeColorMap[i].length < cols) strokeColorMap[i].push(null);
+    }
+
+    // Now fill the colors properly
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            // Interpolate between colors based on position
+            const posx = (cols > 1) ? map(j, 0, cols - 1, 0, 1) : 0;
+            const posy = (rows > 1) ? map(i, 0, rows - 1, 0, 1) : 0;
+            
+            const colorTop = lerpColor(topLeftPicker.color(), topRightPicker.color(), posx);
+            const colorBottom = lerpColor(bottomLeftPicker.color(), bottomRightPicker.color(), posx);
+            const colorFinal = lerpColor(colorTop, colorBottom, posy);
+
+            const strokeColorTop = lerpColor(strokeTopLeftPicker.color(), strokeTopRightPicker.color(), posx);
+            const strokeColorBottom = lerpColor(strokeBottomLeftPicker.color(), strokeBottomRightPicker.color(), posx);
+            const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
+
+            colorMap[i][j] = colorFinal;
+            strokeColorMap[i][j] = strokeColorFinal;
+        }
+    }
+}
+
 
 
 function drawPulse() {
@@ -69,15 +105,12 @@ function drawPulse() {
 }
 
 function draw1() {
-    // Update the canvas size based on slider values
     canvasWidth = canvasWidthSlider.value();
     canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
+    resizeCanvas(canvasWidth, canvasHeight);
 
-    // Set the background to the selected color
     background(backgroundPicker.color());
 
-    // Update variables based on slider values
     rows = rowsSlider.value();
     cols = colsSlider.value();
     spacing = spacingSlider.value();
@@ -90,68 +123,42 @@ function draw1() {
     const xOffset = (width - cols * spacing) / 2;
     const yOffset = (height - rows * spacing) / 2;
 
-    // Center coordinates for the pulse effect
     const centerX = width / 2;
     const centerY = height / 2;
 
-    // Loop through each row and column to draw shapes
     for (let i = 0; i < rows; i++) {
+//         console.log("colorMap dimensions:", colorMap.length, colorMap[0]?.length);
+// console.log("rows, cols:", rows, cols);
         for (let j = 0; j < cols; j++) {
-            let x = j * spacing + spacing / 2 + xOffset; // Calculate x coordinate of shape
-            let y = i * spacing + spacing / 2 + yOffset; // Calculate y coordinate of shape
+            let x = j * spacing + spacing / 2 + xOffset;
+            let y = i * spacing + spacing / 2 + yOffset;
 
-            // Use Perlin noise to distort the position of the shape
             const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
             const angle = noiseVal * TWO_PI * 5;
             const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
             x += distortion * cos(angle);
             y += distortion * sin(angle);
 
-            // Distance from the center for pulsating effect
             let distFromCenter = dist(x, y, centerX, centerY);
-
-            // Create a pulsating size based on distance and time
-            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
+            let direction = userPulse >= 0 ? 1 : -1;
             let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
 
-            // Wrap shapes around the screen if they go off-screen
-            if (x < 0) {
-                x = width + x % width;
-            } else if (x > width) {
-                x = x % width;
-            }
+            if (x < 0) x = width + x % width;
+            else if (x > width) x = x % width;
+            if (y < 0) y = height + y % height;
+            else if (y > height) y = y % height;
 
-            if (y < 0) {
-                y = height + y % height;
-            } else if (y > height) {
-                y = y % height;
-            }
+            // Get precomputed colors
+            const fillColor = colorMap[i]?.[j] || color(0); // Default to black if undefined
+            const strokeColor = strokeColorMap[i]?.[j] || color(0); // Default to black if undefined
+            
+            // const fillColor = colorMap[i][j];
+            // const strokeColor = strokeColorMap[i][j];
 
-            // Interpolate between colors based on position
-            const posx = map(j, 0, cols - 1, 0, 1);
-            const posy = map(i, 0, rows - 1, 0, 1);
-            const colorTopLeft = topLeftPicker.color();
-            const colorTopRight = topRightPicker.color();
-            const colorBottomLeft = bottomLeftPicker.color();
-            const colorBottomRight = bottomRightPicker.color();
-            const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
-            const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
-            const colorFinal = lerpColor(colorTop, colorBottom, posy);
-
-            const strokeTopLeftColor = strokeTopLeftPicker.color();
-            const strokeTopRightColor = strokeTopRightPicker.color();
-            const strokeBottomLeftColor = strokeBottomLeftPicker.color();
-            const strokeBottomRightColor = strokeBottomRightPicker.color();
-            const strokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
-            const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
-            const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
-
-            // Set the fill and stroke colors
-            fill(colorFinal);
-            stroke(strokeColorFinal);
+            fill(fillColor);
+            stroke(strokeColor);
             strokeWeight(strokeWeightVal);
 
-            // Draw the shape with pulsating size
             drawShape(shapeType, x, y, pulsateSize);
         }
     }

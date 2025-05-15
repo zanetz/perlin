@@ -2,14 +2,23 @@
 function initializeUI() {
   rowsSlider = createSlider(1, 300, rows);
   rowsSlider.position(160, 14);
+  rowsSlider.input(() => {
+    rows = rowsSlider.value();
+    generateColorMaps();  // Update the color maps when the rows slider changes
+  });
   const rowsLabel = createP('Rows');
   rowsLabel.position(20, 10);
 
+  // Columns Slider
   colsSlider = createSlider(1, 150, cols);
   colsSlider.position(160, 44);
+  colsSlider.input(() => {
+    cols = colsSlider.value();
+    generateColorMaps();  // Update the color maps when the columns slider changes
+  });
   const colsLabel = createP('Columns');
   colsLabel.position(20, 40);
-
+  
   spacingSlider = createSlider(1, 160, spacing);
   spacingSlider.position(160, 74);
   const spacingLabel = createP('Spacing');
@@ -19,9 +28,6 @@ function initializeUI() {
   sizeSlider.position(160, 134);
   const sizeLabel = createP('Size');
   sizeLabel.position(20, 130);
-
- 
-  
 
   shapeButton = createButton('Toggle Shape');
   shapeButton.position(160, 294);
@@ -36,39 +42,6 @@ function initializeUI() {
   strokeWeightSlider.position(160, 380);
   const strokeWeightLabel = createP('Outline Weight');
   strokeWeightLabel.position(20, 360);
-
-
-  const randomizeFillColorsButton = createButton('Randomize Fill Colors');
-  randomizeFillColorsButton.position(160, 800);
-  randomizeFillColorsButton.mousePressed(randomizeFillColors);
-  
-  const randomizeStrokeColorsButton = createButton('Randomize Stroke Colors');
-  randomizeStrokeColorsButton.position(160, 830);
-  randomizeStrokeColorsButton.mousePressed(randomizeStrokeColors);
-
-  const randomizeBackgroundColorButton = createButton('Randomize Background Color');
-  randomizeBackgroundColorButton.position(160, 860);
-  randomizeBackgroundColorButton.mousePressed(randomizeBackgroundColor);
-
-  const blackFillButton = createButton('Set fill to black');
-  blackFillButton.position(160, 900);
-  blackFillButton.mousePressed(blackFill);
-
-  const blackBorderButton = createButton('Set border to black');
-  blackBorderButton.position(160, 930);
-  blackBorderButton.mousePressed(blackBorder);
-
-  initializeAdditionalUI();
-}
-
-function initializeAdditionalUI() {
-  const setStarSnakesButton = createButton('star snakes');
-  setStarSnakesButton.position(160, 670);
-  setStarSnakesButton.mousePressed(setStarSnakes);
-
-  const setOneSnakeButton = createButton('one');
-  setOneSnakeButton.position(160, 700);
-  setOneSnakeButton.mousePressed(OneSnake);
 
   schmovementSlider = createSlider(0, 900, 150);
   schmovementSlider.position(160, 430);
@@ -95,8 +68,44 @@ function initializeAdditionalUI() {
   const pulseLabel = createP('Pulse');
   pulseLabel.position(20, 720);
 
+  // add a 0 button to reset the pulse slider
+  const pulseResetButton = createButton('Reset Pulse');
+  pulseResetButton.position(160, 760);
+  pulseResetButton.mousePressed(() => {
+    pulseSlider.value(0);
+  });
+
+  imageInput = createFileInput(handleFile);
+  imageInput.position(20, 1100);
+
+
+  scaleR = createInput('25', 'number');
+  scaleR.attribute('min', '1');
+  scaleR.attribute('max', '50');
+  scaleR.position(160, 1160);
+  scaleR.size(60);
+  const scaleRLabel = createP('scaleR');
+  scaleRLabel.position(20, 1160);
+
+  initializeAdditionalUI();
+}
+
+function initializeAdditionalUI() {
+
   initializeFillColorPickers();
   initializeStrokeColorPickers();
+  initializeRandButtons();
+  rowsSlider.input(generateColorMaps);
+  colsSlider.input(generateColorMaps);
+  topLeftPicker.input(generateColorMaps);
+  topRightPicker.input(generateColorMaps);
+  bottomLeftPicker.input(generateColorMaps);
+  bottomRightPicker.input(generateColorMaps);
+  strokeTopLeftPicker.input(generateColorMaps);
+  strokeTopRightPicker.input(generateColorMaps);
+  strokeBottomLeftPicker.input(generateColorMaps);
+  strokeBottomRightPicker.input(generateColorMaps);
+
 }
 
 // Stroke color pickers in 2x2 grid layout
@@ -116,6 +125,7 @@ function initializeStrokeColorPickers() {
   strokeBottomRightPicker.position(230, 620);
 }
 
+// Fill color pickers in 2x2 grid layout
 function initializeFillColorPickers(){
   topLeftPicker = createColorPicker('#000000');
   topLeftPicker.position(160, 170);
@@ -132,6 +142,40 @@ function initializeFillColorPickers(){
   bottomRightPicker.position(230, 220);
 }
 
+function initializeRandButtons() {
+  const randomizeFillColorsButton = createButton('Randomize Fill Colors');
+  randomizeFillColorsButton.position(160, 800);
+  randomizeFillColorsButton.mousePressed(randomizeFillColors);
+  
+  const randomizeStrokeColorsButton = createButton('Randomize Stroke Colors');
+  randomizeStrokeColorsButton.position(160, 830);
+  randomizeStrokeColorsButton.mousePressed(randomizeStrokeColors);
+
+  const randomizeBackgroundColorButton = createButton('Randomize Background Color');
+  randomizeBackgroundColorButton.position(160, 860);
+  randomizeBackgroundColorButton.mousePressed(randomizeBackgroundColor);
+
+  const blackFillButton = createButton('Set fill to black');
+  blackFillButton.position(160, 900);
+  blackFillButton.mousePressed(blackFill);
+
+  const blackBorderButton = createButton('Set border to black');
+  blackBorderButton.position(160, 930);
+  blackBorderButton.mousePressed(blackBorder);
+
+  const setStarSnakesButton = createButton('star snakes');
+  setStarSnakesButton.position(160, 670);
+  setStarSnakesButton.mousePressed(setStarSnakes);
+
+  const setOneSnakeButton = createButton('one');
+  setOneSnakeButton.position(160, 700);
+  setOneSnakeButton.mousePressed(OneSnake);
+
+
+
+}
+
+
 function getRandomColor() {
   return color(random(255), random(255), random(255));
 }
@@ -142,6 +186,8 @@ function randomizeFillColors() {
   topRightPicker.value(getRandomColor().toString('#rrggbb'));
   bottomLeftPicker.value(getRandomColor().toString('#rrggbb'));
   bottomRightPicker.value(getRandomColor().toString('#rrggbb'));
+
+  generateColorMaps();
 }
 
 
@@ -150,6 +196,8 @@ function randomizeStrokeColors() {
   strokeTopRightPicker.value(getRandomColor().toString('#rrggbb'));
   strokeBottomLeftPicker.value(getRandomColor().toString('#rrggbb'));
   strokeBottomRightPicker.value(getRandomColor().toString('#rrggbb'));
+
+  generateColorMaps();
 }
 
 
@@ -163,6 +211,9 @@ function blackFill() {
   topRightPicker.value('#000000');
   bottomLeftPicker.value("#000000")
   bottomRightPicker.value("#000000")
+
+    generateColorMaps();
+
 }
 
 
@@ -171,4 +222,9 @@ function blackBorder() {
   strokeTopRightPicker.value('#000000');
   strokeBottomLeftPicker.value("#000000")
   strokeBottomRightPicker.value("#000000")
+
+    generateColorMaps();
+
 }
+
+
