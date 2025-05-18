@@ -97,69 +97,68 @@ function createSmallImg() {
 function drawFromImage() {
   if (!img || !smallImg) return;
 
-  background(backgroundPicker ? backgroundPicker.color() : 255);
+  // 1. update global vars and background
+  refreshGlobals();
+  useCheckerboard ? blitCheckerboard() : background(backgroundPicker.color());
+
+  // 2. gather common values
+  let rows      = rowsSlider.value();
+  let cols      = colsSlider.value();
+  let spacing   = spacingSlider.value();
+  let userSpeed = speedSlider.value() * 3;
+  let schmove   = schmovementSlider.value();
+  let pulseVal  = pulseSlider.value();
+  let baseSize  = sizeSlider.value();
+
+  const xOff = (width  - cols * spacing) / 2;
+  const yOff = (height - rows * spacing) / 2;
+  const cX   = width  / 2;
+  const cY   = height / 2;
+
   pixelDensity(1);
-
-  let rows = rowsSlider ? rowsSlider.value() : 40;
-  let cols = colsSlider ? colsSlider.value() : 40;
-  let spacing = spacingSlider ? spacingSlider.value() : 16;
-  let gridW = spacing;
-  let gridH = spacing;
-
-  let userSpeed = (speedSlider ? speedSlider.value() : 1) * 3;
-  let schmoveVal = schmovementSlider ? schmovementSlider.value() : 5;
-  let userPulse = pulseSlider ? pulseSlider.value() : 0;
-
-  const centerX = width / 2;
-  const centerY = height / 2;
-
-  strokeWeight(strokeWeightSlider ? strokeWeightSlider.value() : 0);
-  if ((strokeWeightSlider ? strokeWeightSlider.value() : 0) > 0) {
-    stroke(strokeColorPicker ? strokeColorPicker.color() : 0);
-  } else {
-    noStroke();
-  }
-
-  let offsetX = (width - cols * spacing) / 2 + spacing / 2;
-  let offsetY = (height - rows * spacing) / 2 + spacing / 2;
+  smallImg.loadPixels();
 
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      let x = j * spacing + offsetX;
-      let y = i * spacing + offsetY;
 
-      // Perlin noise motion
-      const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
-      const angle = noiseVal * TWO_PI * 5;
-      const distortion = map(noiseVal, 0, 1, schmoveVal, min(gridW, gridH) / 2);
-      x += distortion * cos(angle);
-      y += distortion * sin(angle);
+      let x = j * spacing + spacing/2 + xOff;
+      let y = i * spacing + spacing/2 + yOff;
 
-      // Pulsate size by distance from center
-      let distFromCenter = dist(x, y, centerX, centerY);
-      let direction = userPulse >= 0 ? 1 : -1;
-      let pulsateSize = (sizeSlider ? sizeSlider.value() : min(gridW, gridH) * 0.8) + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
+      const n   = noise(x/width, y/height, frameCount*0.0001*userSpeed);
+      const ang = n * TWO_PI * 5;
+      const dis = map(n, 0, 300, schmove, spacing/2);
+      x += dis * cos(ang);
+      y += dis * sin(ang);
 
-      // Wrap screen edges
-      if (x < 0) x = width + x % width;
-      else if (x > width) x = x % width;
-      if (y < 0) y = height + y % height;
-      else if (y > height) y = y % height;
+      x = (x + width)  % width;
+      y = (y + height) % height;
 
-      // Use smallImg pixel colors for this grid cell
-      let index = (j + i * cols) * 4;
-      let r = smallImg.pixels[index];
-      let g = smallImg.pixels[index + 1];
-      let b = smallImg.pixels[index + 2];
-      let a = smallImg.pixels[index + 3];
+      const d    = dist(x, y, cX, cY);
+      const dir  = pulseVal >= 0 ? 1 : -1;
+      const size = baseSize + sin(frameCount*0.05 + dir*d*0.01)*abs(pulseVal);
 
+      const idx = (j + i*cols)*4;
+      const r   = smallImg.pixels[idx];
+      const g   = smallImg.pixels[idx+1];
+      const b   = smallImg.pixels[idx+2];
+      const a   = smallImg.pixels[idx+3];
       fill(r, g, b, a);
+
+      
+      const px = cols>1 ? j/(cols-1) : 0;
+      const py = rows>1 ? i/(rows-1) : 0;
+      const top    = lerpColor(strokeTopLeftPicker.color(),    strokeTopRightPicker.color(),    px);
+      const bottom = lerpColor(strokeBottomLeftPicker.color(), strokeBottomRightPicker.color(), px);
+      const strokeCol = lerpColor(top, bottom, py);
+
+      stroke(strokeCol);
+      strokeWeight(strokeWeightVal);
 
       if (shapeType === 'square') {
         rectMode(CENTER);
-        rect(x, y, pulsateSize, pulsateSize);
+        rect(x, y, size, size);
       } else {
-        ellipse(x, y, pulsateSize);
+        ellipse(x, y, size);
       }
     }
   }
