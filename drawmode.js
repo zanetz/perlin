@@ -1,348 +1,298 @@
-let colorMap = []; // To store fill colors
-let strokeColorMap = []; // To store stroke colors
+/*  ──────────────────────────────────────────────────────────────
+    0.  CONSTANTS & STATE
+    ────────────────────────────────────────────────────────────── */
+
+let colorMap       = [];   // pre‑computed fill colours
+let strokeColorMap = [];   // pre‑computed stroke colours
 
 
-function generateColorMaps() {
-    // Ensure the color map arrays have the right number of rows
-    while (colorMap.length < rows) colorMap.push([]);
-    while (strokeColorMap.length < rows) strokeColorMap.push([]);
-    
-    // Ensure each row has the correct number of columns
-    for (let i = 0; i < rows; i++) {
-        while (colorMap[i].length < cols) colorMap[i].push(null);
-        while (strokeColorMap[i].length < cols) strokeColorMap[i].push(null);
+
+/*  ──────────────────────────────────────────────────────────────
+    1.  COLOUR‑MAP GENERATION
+    ────────────────────────────────────────────────────────────── */
+
+function generateColorMaps () {
+
+  /* 1a. make sure we have enough rows */
+  while (colorMap.length       < rows) colorMap.push([]);
+  while (strokeColorMap.length < rows) strokeColorMap.push([]);
+
+  /* 1b. make sure every row has enough columns */
+  for (let i = 0; i < rows; i++) {
+    while (colorMap[i].length       < cols) colorMap[i].push(null);
+    while (strokeColorMap[i].length < cols) strokeColorMap[i].push(null);
+  }
+
+  /* 1c. compute fill & stroke for each cell */
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+
+      const px = cols > 1 ? map(j, 0, cols - 1, 0, 1) : 0;
+      const py = rows > 1 ? map(i, 0, rows - 1, 0, 1) : 0;
+
+      // fill
+      const fTop    = lerpColor(topLeftPicker.color(),    topRightPicker.color(),    px);
+      const fBottom = lerpColor(bottomLeftPicker.color(), bottomRightPicker.color(), px);
+      colorMap[i][j] = lerpColor(fTop, fBottom, py);
+
+      // stroke
+      const sTop    = lerpColor(strokeTopLeftPicker.color(),  strokeTopRightPicker.color(),  px);
+      const sBottom = lerpColor(strokeBottomLeftPicker.color(), strokeBottomRightPicker.color(), px);
+      strokeColorMap[i][j] = lerpColor(sTop, sBottom, py);
     }
-
-    // Now fill the colors properly
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            // Interpolate between colors based on position
-            const posx = (cols > 1) ? map(j, 0, cols - 1, 0, 1) : 0;
-            const posy = (rows > 1) ? map(i, 0, rows - 1, 0, 1) : 0;
-            
-            const colorTop = lerpColor(topLeftPicker.color(), topRightPicker.color(), posx);
-            const colorBottom = lerpColor(bottomLeftPicker.color(), bottomRightPicker.color(), posx);
-            const colorFinal = lerpColor(colorTop, colorBottom, posy);
-
-            const strokeColorTop = lerpColor(strokeTopLeftPicker.color(), strokeTopRightPicker.color(), posx);
-            const strokeColorBottom = lerpColor(strokeBottomLeftPicker.color(), strokeBottomRightPicker.color(), posx);
-            const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
-
-            colorMap[i][j] = colorFinal;
-            strokeColorMap[i][j] = strokeColorFinal;
-        }
-    }
+  }
 }
 
 
 
-function drawPulse() {
-    // Update the canvas size based on slider values
-    canvasWidth = canvasWidthSlider.value();
-    canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight);
+/*  ──────────────────────────────────────────────────────────────
+    2.  UTILITY – canvas resize & shared slider refresh
+    ────────────────────────────────────────────────────────────── */
 
-    // Set the background color
-    background(backgroundPicker.color());
+function refreshGlobals () {
+  canvasWidth  = canvasWidthSlider.value();
+  canvasHeight = canvasHeightSlider.value();
+  resizeCanvas(canvasWidth, canvasHeight);
 
-    // Update variables based on slider values
-    rows = rowsSlider.value();
-    cols = colsSlider.value();
-    spacing = spacingSlider.value();
-    shapeSize = sizeSlider.value();
-    strokeWeightVal = strokeWeightSlider.value();
-    schmoveVal = schmovementSlider.value();
-    userSpeed = speedSlider.value() * 3;
-    userPulse = pulseSlider.value()
-
-    const xOffset = (width - cols * spacing) / 2;
-    const yOffset = (height - rows * spacing) / 2;
-
-    // Center coordinates for the pulse effect
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            let x = j * spacing + spacing / 2 + xOffset;
-            let y = i * spacing + spacing / 2 + yOffset;
-
-            // Distance from the center
-            let distFromCenter = dist(x, y, centerX, centerY);
-
-            // Create a pulsating effect by altering shape size based on distance and time
-            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
-            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
-
-            // Interpolate between colors based on position
-            const posx = map(j, 0, cols - 1, 0, 1);
-            const posy = map(i, 0, rows - 1, 0, 1);
-            const colorTopLeft = topLeftPicker.color();
-            const colorTopRight = topRightPicker.color();
-            const colorBottomLeft = bottomLeftPicker.color();
-            const colorBottomRight = bottomRightPicker.color();
-            const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
-            const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
-            const colorFinal = lerpColor(colorTop, colorBottom, posy);
-
-            const strokeTopLeftColor = strokeTopLeftPicker.color();
-            const strokeTopRightColor = strokeTopRightPicker.color();
-            const strokeBottomLeftColor = strokeBottomLeftPicker.color();
-            const strokeBottomRightColor = strokeBottomRightPicker.color();
-            const strokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
-            const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
-            const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
-
-            // Set fill and stroke colors
-            fill(colorFinal);
-            stroke(strokeColorFinal);
-            strokeWeight(strokeWeightVal);
-
-            // Draw the shape with pulsating size
-            drawShape(shapeType, x, y, pulsateSize);
-        }
-    }
-}
-
-function draw1() {
-    canvasWidth = canvasWidthSlider.value();
-    canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight);
-
-    background(backgroundPicker.color());
-
-    rows = rowsSlider.value();
-    cols = colsSlider.value();
-    spacing = spacingSlider.value();
-    shapeSize = sizeSlider.value();
-    strokeWeightVal = strokeWeightSlider.value();
-    schmoveVal = schmovementSlider.value();
-    userSpeed = speedSlider.value() * 3;
-    userPulse = pulseSlider.value();
-
-    const xOffset = (width - cols * spacing) / 2;
-    const yOffset = (height - rows * spacing) / 2;
-
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    for (let i = 0; i < rows; i++) {
-//         console.log("colorMap dimensions:", colorMap.length, colorMap[0]?.length);
-// console.log("rows, cols:", rows, cols);
-        for (let j = 0; j < cols; j++) {
-            let x = j * spacing + spacing / 2 + xOffset;
-            let y = i * spacing + spacing / 2 + yOffset;
-
-            const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
-            const angle = noiseVal * TWO_PI * 5;
-            const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
-            x += distortion * cos(angle);
-            y += distortion * sin(angle);
-
-            let distFromCenter = dist(x, y, centerX, centerY);
-            let direction = userPulse >= 0 ? 1 : -1;
-            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
-
-            if (x < 0) x = width + x % width;
-            else if (x > width) x = x % width;
-            if (y < 0) y = height + y % height;
-            else if (y > height) y = y % height;
-
-            // Get precomputed colors
-            const fillColor = colorMap[i]?.[j] || color(0); // Default to black if undefined
-            const strokeColor = strokeColorMap[i]?.[j] || color(0); // Default to black if undefined
-            
-            // const fillColor = colorMap[i][j];
-            // const strokeColor = strokeColorMap[i][j];
-
-            fill(fillColor);
-            stroke(strokeColor);
-            strokeWeight(strokeWeightVal);
-
-            drawShape(shapeType, x, y, pulsateSize);
-        }
-    }
-}
-
-function draw2() {
-    // Update the canvas size based on slider values
-    canvasWidth = canvasWidthSlider.value();
-    canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
-
-    // Set the background to the selected color
-    background(backgroundPicker.color());
-
-    // Update variables based on slider values
-    rows = rowsSlider.value();
-    cols = colsSlider.value();
-    spacing = spacingSlider.value();
-    shapeSize = sizeSlider.value();
-    strokeWeightVal = strokeWeightSlider.value();
-    schmoveVal = schmovementSlider.value();
-    userSpeed = speedSlider.value() * 3;
-    userPulse = pulseSlider.value(); // Add this line to get the pulse value from the slider
-
-    const xOffset = (width - cols * spacing) / 2;
-    const yOffset = (height - rows * spacing) / 2;
-
-    // Center coordinates for the pulse effect
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    // Loop through each row and column to draw shapes
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            let x = j * spacing + spacing / 2 + xOffset; // Calculate x coordinate of shape
-            let y = i * spacing + spacing / 2 + yOffset; // Calculate y coordinate of shape
-
-            // Determine which quadrant to draw in
-            if (i < rows / 2 && j < cols / 2) {
-                // Top-left quadrant
-                x += -width / 4;
-                y += -height / 4;
-            } else if (i < rows / 2 && j >= cols / 2) {
-                // Top-right quadrant
-                x += width / 4;
-                y += -height / 4;
-            } else if (i >= rows / 2 && j < cols / 2) {
-                // Bottom-left quadrant
-                x += -width / 4;
-                y += height / 4;
-            } else if (i >= rows / 2 && j >= cols / 2) {
-                // Bottom-right quadrant
-                x += width / 4;
-                y += height / 4;
-            }
-
-            // Use Perlin noise to distort the position of the shape
-            const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
-            const angle = noiseVal * TWO_PI * 5;
-            const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
-            x += distortion * cos(angle);
-            y += distortion * sin(angle);
-
-            // Distance from the center for pulsating effect
-            let distFromCenter = dist(x, y, centerX, centerY);
-
-            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
-            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
-
-            // Interpolate between colors based on position
-            const posx = map(j, 0, cols - 1, 0, 1);
-            const posy = map(i, 0, rows - 1, 0, 1);
-            const colorTopLeft = topLeftPicker.color();
-            const colorTopRight = topRightPicker.color();
-            const colorBottomLeft = bottomLeftPicker.color();
-            const colorBottomRight = bottomRightPicker.color();
-            const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
-            const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
-            const colorFinal = lerpColor(colorTop, colorBottom, posy);
-
-            const strokeTopLeftColor = strokeTopLeftPicker.color();
-            const strokeTopRightColor = strokeTopRightPicker.color();
-            const strokeBottomLeftColor = strokeBottomLeftPicker.color();
-            const strokeBottomRightColor = strokeBottomRightPicker.color();
-            const strokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
-            const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
-            const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
-
-            // Set the fill and stroke colors
-            fill(colorFinal);
-            stroke(strokeColorFinal);
-            strokeWeight(strokeWeightVal);
-
-            // Draw the shape with pulsating size
-            drawShape(shapeType, x, y, pulsateSize);
-        }
-    }
-}
-
-function draw3() {
-    // Update the canvas size based on slider values
-    canvasWidth = canvasWidthSlider.value();
-    canvasHeight = canvasHeightSlider.value();
-    resizeCanvas(canvasWidth, canvasHeight); // Resize the canvas based on slider values
-
-    // Set the background to the selected color
-    background(backgroundPicker.color());
-
-    // Update variables based on slider values
-    rows = rowsSlider.value();
-    cols = colsSlider.value();
-    spacing = spacingSlider.value();
-    shapeSize = sizeSlider.value();
-    strokeWeightVal = strokeWeightSlider.value();
-    schmoveVal = schmovementSlider.value();
-    userSpeed = speedSlider.value() * 3;
-    userPulse = pulseSlider.value();
-
-    // Get the number of sections from a slider or input
-    const numSections = strokeWeightVal; // e.g., create a slider to set the number of sections
-    const sectionWidth = width / numSections;
-    const sectionHeight = height / numSections;
-    const xOffset = (width - cols * spacing) / 2;
-    const yOffset = (height - rows * spacing) / 2;
-
-    // Center coordinates for the pulse effect
-    const centerX = width / 2;
-    const centerY = height / 2;
-
-    // Loop through each row and column to draw shapes
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            let x = j * spacing + spacing / 2 + xOffset; // Calculate x coordinate of shape
-            let y = i * spacing + spacing / 2 + yOffset; // Calculate y coordinate of shape
-
-            // Determine which section to draw in
-            const sectionRow = Math.floor(i / (rows / numSections));
-            const sectionCol = Math.floor(j / (cols / numSections));
-
-            // Offset the position based on the section
-            x += (sectionCol - (numSections - 1) / 2) * sectionWidth;
-            y += (sectionRow - (numSections - 1) / 2) * sectionHeight;
-
-            // Use Perlin noise to distort the position of the shape
-            const noiseVal = noise(x / width, y / height, frameCount * 0.0001 * userSpeed);
-            const angle = noiseVal * TWO_PI * 5;
-            const distortion = map(noiseVal, 0, 300, schmoveVal, spacing / 2);
-            x += distortion * cos(angle);
-            y += distortion * sin(angle);
-
-            // Distance from the center for pulsating effect
-            let distFromCenter = dist(x, y, centerX, centerY);
-
-            let direction = userPulse >= 0 ? 1 : -1;  // Determine the direction based on the sign of userPulse
-            let pulsateSize = shapeSize + sin(frameCount * 0.05 + direction * distFromCenter * 0.01) * abs(userPulse);
-
-            // Interpolate between colors based on position
-            const posx = map(j, 0, cols - 1, 0, 1);
-            const posy = map(i, 0, rows - 1, 0, 1);
-            const colorTopLeft = topLeftPicker.color();
-            const colorTopRight = topRightPicker.color();
-            const colorBottomLeft = bottomLeftPicker.color();
-            const colorBottomRight = bottomRightPicker.color();
-            const colorTop = lerpColor(colorTopLeft, colorTopRight, posx);
-            const colorBottom = lerpColor(colorBottomLeft, colorBottomRight, posx);
-            const colorFinal = lerpColor(colorTop, colorBottom, posy);
-
-            const strokeTopLeftColor = strokeTopLeftPicker.color();
-            const strokeTopRightColor = strokeTopRightPicker.color();
-            const strokeBottomLeftColor = strokeBottomLeftPicker.color();
-            const strokeBottomRightColor = strokeBottomRightPicker.color();
-            const strokeColorTop = lerpColor(strokeTopLeftColor, strokeTopRightColor, posx);
-            const strokeColorBottom = lerpColor(strokeBottomLeftColor, strokeBottomRightColor, posx);
-            const strokeColorFinal = lerpColor(strokeColorTop, strokeColorBottom, posy);
-
-            // Set the fill and stroke colors
-            fill(colorFinal);
-            stroke(strokeColorFinal);
-            strokeWeight(strokeWeightVal);
-
-            // Draw the shape with pulsating size
-            drawShape(shapeType, x, y, pulsateSize);
-        }
-    }
+  rows            = rowsSlider.value();
+  cols            = colsSlider.value();
+  spacing         = spacingSlider.value();
+  shapeSize       = sizeSlider.value();
+  strokeWeightVal = strokeWeightSlider.value();
+  schmoveVal      = schmovementSlider.value();
+  userSpeed       = speedSlider.value() * 3;
+  userPulse       = pulseSlider.value();
 }
 
 
+
+/*  ──────────────────────────────────────────────────────────────
+    3.  DRAW VARIANTS
+    ────────────────────────────────────────────────────────────── */
+
+
+/* --------------------------------------------------------------
+   3a. drawPulse  – radial pulsating grid
+   -------------------------------------------------------------- */
+function drawPulse () {
+
+  refreshGlobals();
+
+  useCheckerboard ? blitCheckerboard() : background(backgroundPicker.color());
+
+  const xOff = (width  - cols * spacing) / 2;
+  const yOff = (height - rows * spacing) / 2;
+  const cX   = width  / 2;
+  const cY   = height / 2;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+
+      let x = j * spacing + spacing / 2 + xOff;
+      let y = i * spacing + spacing / 2 + yOff;
+
+      /* pulsation */
+      const d    = dist(x, y, cX, cY);
+      const dir  = userPulse >= 0 ? 1 : -1;
+      const size = shapeSize + sin(frameCount * .05 + dir * d * .01) * abs(userPulse);
+
+      /* colour (direct blend) */
+      const px = map(j, 0, cols - 1, 0, 1);
+      const py = map(i, 0, rows - 1, 0, 1);
+      const fillCol   = lerpColor( lerpColor(topLeftPicker.color(),    topRightPicker.color(),    px ),
+                                   lerpColor(bottomLeftPicker.color(), bottomRightPicker.color(), px ), py );
+      const strokeCol = lerpColor( lerpColor(strokeTopLeftPicker.color(),  strokeTopRightPicker.color(),  px ),
+                                   lerpColor(strokeBottomLeftPicker.color(), strokeBottomRightPicker.color(), px ), py );
+
+      fill(fillCol);
+      stroke(strokeCol);
+      strokeWeight(strokeWeightVal);
+      drawShape(shapeType, x, y, size);
+    }
+  }
+}
+
+
+
+/* --------------------------------------------------------------
+   3b. draw1 – noise‑distorted grid (pre‑computed colours)
+   -------------------------------------------------------------- */
+function draw1 () {
+
+  refreshGlobals();
+  useCheckerboard ? blitCheckerboard() : background(backgroundPicker.color());
+
+  const xOff = (width  - cols * spacing) / 2;
+  const yOff = (height - rows * spacing) / 2;
+  const cX   = width  / 2;
+  const cY   = height / 2;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+
+      /* base position */
+      let x = j * spacing + spacing / 2 + xOff;
+      let y = i * spacing + spacing / 2 + yOff;
+
+      /* “schmovement” – Perlin noise distortion */
+      const n   = noise(x / width, y / height, frameCount * .0001 * userSpeed);
+      const ang = n * TWO_PI * 5;
+      const dis = map(n, 0, 300, schmoveVal, spacing / 2);
+      x += dis * cos(ang);
+      y += dis * sin(ang);
+
+      /* pulsation */
+      const d    = dist(x, y, cX, cY);
+      const dir  = userPulse >= 0 ? 1 : -1;
+      const size = shapeSize + sin(frameCount * .05 + dir * d * .01) * abs(userPulse);
+
+      /* colours from pre‑built maps */
+      const fillCol   = colorMap[i]?.[j]       || color(0);
+      const strokeCol = strokeColorMap[i]?.[j] || color(0);
+
+      fill(fillCol);
+      stroke(strokeCol);
+      strokeWeight(strokeWeightVal);
+      drawShape(shapeType, x, y, size);
+    }
+  }
+}
+
+
+
+/* --------------------------------------------------------------
+   3c. draw2 – four‑quadrant split
+   -------------------------------------------------------------- */
+function draw2 () {
+
+  refreshGlobals();
+  useCheckerboard ? blitCheckerboard() : background(backgroundPicker.color());
+
+  const xOff = (width  - cols * spacing) / 2;
+  const yOff = (height - rows * spacing) / 2;
+  const cX   = width  / 2;
+  const cY   = height / 2;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+
+      /* base position */
+      let x = j * spacing + spacing / 2 + xOff;
+      let y = i * spacing + spacing / 2 + yOff;
+
+      /* quadrant offsets */
+      if (i < rows / 2 && j < cols / 2)       { x += -width/4;  y += -height/4; }
+      else if (i < rows / 2 && j >= cols / 2) { x +=  width/4;  y += -height/4; }
+      else if (i >= rows / 2 && j < cols / 2) { x += -width/4;  y +=  height/4; }
+      else                                    { x +=  width/4;  y +=  height/4; }
+
+      /* noise distortion */
+      const n   = noise(x / width, y / height, frameCount * .0001 * userSpeed);
+      const ang = n * TWO_PI * 5;
+      const dis = map(n, 0, 300, schmoveVal, spacing / 2);
+      x += dis * cos(ang);
+      y += dis * sin(ang);
+
+      /* pulsation */
+      const d    = dist(x, y, cX, cY);
+      const dir  = userPulse >= 0 ? 1 : -1;
+      const size = shapeSize + sin(frameCount * .05 + dir * d * .01) * abs(userPulse);
+
+      /* colour (direct blend) */
+      const px = map(j, 0, cols - 1, 0, 1);
+      const py = map(i, 0, rows - 1, 0, 1);
+      const fillCol   = lerpColor( lerpColor(topLeftPicker.color(),    topRightPicker.color(),    px ),
+                                   lerpColor(bottomLeftPicker.color(), bottomRightPicker.color(), px ), py );
+      const strokeCol = lerpColor( lerpColor(strokeTopLeftPicker.color(),  strokeTopRightPicker.color(),  px ),
+                                   lerpColor(strokeBottomLeftPicker.color(), strokeBottomRightPicker.color(), px ), py );
+
+      fill(fillCol);
+      stroke(strokeCol);
+      strokeWeight(strokeWeightVal);
+      drawShape(shapeType, x, y, size);
+    }
+  }
+}
+
+
+
+/* --------------------------------------------------------------
+   3d. draw3 – N×N section split (sections = strokeWeightVal)
+   -------------------------------------------------------------- */
+function draw3 () {
+
+  refreshGlobals();
+  useCheckerboard ? blitCheckerboard() : background(backgroundPicker.color());
+
+  const numSections   = strokeWeightVal;    // user‑controllable section count
+  const sW            = width  / numSections;
+  const sH            = height / numSections;
+  const xOff          = (width  - cols * spacing) / 2;
+  const yOff          = (height - rows * spacing) / 2;
+  const cX            = width  / 2;
+  const cY            = height / 2;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+
+      /* base position inside grid */
+      let x = j * spacing + spacing / 2 + xOff;
+      let y = i * spacing + spacing / 2 + yOff;
+
+      /* section offsets */
+      const sRow = floor(i / (rows / numSections));
+      const sCol = floor(j / (cols / numSections));
+      x += (sCol - (numSections - 1) / 2) * sW;
+      y += (sRow - (numSections - 1) / 2) * sH;
+
+      /* noise distortion */
+      const n   = noise(x / width, y / height, frameCount * .0001 * userSpeed);
+      const ang = n * TWO_PI * 5;
+      const dis = map(n, 0, 300, schmoveVal, spacing / 2);
+      x += dis * cos(ang);
+      y += dis * sin(ang);
+
+      /* pulsation */
+      const d    = dist(x, y, cX, cY);
+      const dir  = userPulse >= 0 ? 1 : -1;
+      const size = shapeSize + sin(frameCount * .05 + dir * d * .01) * abs(userPulse);
+
+      /* colour (direct blend) */
+      const px = map(j, 0, cols - 1, 0, 1);
+      const py = map(i, 0, rows - 1, 0, 1);
+      const fillCol   = lerpColor( lerpColor(topLeftPicker.color(),    topRightPicker.color(),    px ),
+                                   lerpColor(bottomLeftPicker.color(), bottomRightPicker.color(), px ), py );
+      const strokeCol = lerpColor( lerpColor(strokeTopLeftPicker.color(),  strokeTopRightPicker.color(),  px ),
+                                   lerpColor(strokeBottomLeftPicker.color(), strokeBottomRightPicker.color(), px ), py );
+
+      fill(fillCol);
+      stroke(strokeCol);
+      strokeWeight(strokeWeightVal);
+      drawShape(shapeType, x, y, size);
+    }
+  }
+}
+
+
+
+/*  ──────────────────────────────────────────────────────────────
+    4.  HELPER – checkerboard blit
+    ────────────────────────────────────────────────────────────── */
+
+/* draw.js  – checkerboard helpers
+   ---------------------------------------------- */
+
+/* cheap frame‑blit, rebuild only when cbDirty === true */
+function blitCheckerboard () {
+  if (cbDirty) rebuildCheckerboard();
+  image(checkerGfx, 0, 0);
+}
+
+function rebuildCheckerboard () {
+  /* … already‑existing code … */
+  cbDirty = false;
+}
+
+/* If you are NOT using ES modules, expose to global. */
+window.blitCheckerboard      = blitCheckerboard;
+window.rebuildCheckerboard   = rebuildCheckerboard;

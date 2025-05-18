@@ -17,6 +17,16 @@ let scaleR;
 let img, imageInput;
 let gridSize = 10;
 
+// --- checkerboard controls ---
+let cbColsSlider, cbRowsSlider;        // # squares across / down
+let cbColPickerA, cbColPickerB;        // the two alternating colours
+let useCheckerboard = false;           // toggle – defaults to plain fill
+
+
+let checkerGfx;             // off‑screen canvas
+let cbDirty = true;         // “needs rebuild?” flag
+
+
 
 
 function setup() {
@@ -164,3 +174,47 @@ colsSlider.input(() => {
   createSmallImg();
   redraw();
 });
+
+
+function drawCheckerboard(cols, rows, colA, colB) {
+  const sqW = width  / cols;
+  const sqH = height / rows;
+  noStroke();
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      fill((x + y) % 2 === 0 ? colA : colB);
+      rect(x * sqW, y * sqH, sqW, sqH);
+    }
+  }
+}
+
+function rebuildCheckerboard() {
+  if (!checkerGfx ||
+      checkerGfx.width  !== width ||
+      checkerGfx.height !== height) {
+    checkerGfx = createGraphics(width, height);
+  }
+
+  const cols = cbColsSlider.value();
+  const rows = cbRowsSlider.value();
+  const colA = cbColPickerA.color();
+  const colB = cbColPickerB.color();
+
+  const sqW = width  / cols;
+  const sqH = height / rows;
+  checkerGfx.noStroke();
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      checkerGfx.fill((x + y) % 2 === 0 ? colA : colB);
+      checkerGfx.rect(x * sqW, y * sqH, sqW, sqH);
+    }
+  }
+  cbDirty = false;
+}
+
+cbToggle.changed(() => { useCheckerboard = cbToggle.checked(); cbDirty = true; });
+cbColsSlider.input(() => cbDirty = true);
+cbRowsSlider.input(() => cbDirty = true);
+cbColPickerA.input(() => cbDirty = true);
+cbColPickerB.input(() => cbDirty = true);

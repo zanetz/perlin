@@ -1,230 +1,204 @@
-// ui.js
-function initializeUI() {
-  rowsSlider = createSlider(1, 300, rows);
-  rowsSlider.position(160, 14);
-  rowsSlider.input(() => {
-    rows = rowsSlider.value();
-    generateColorMaps();  // Update the color maps when the rows slider changes
-  });
-  const rowsLabel = createP('Rows');
-  rowsLabel.position(20, 10);
+/* ============================================================
+   INITIALISE EVERYTHING
+   ============================================================ */
+function initializeUI () {
+  createMainSliders();
+  createShapeControls();
+  createFillPickers();
+  createStrokePickers();
+  createRandomButtons();
+  createCheckerboardControls();
+  hookGenerateColorMapEvents();
+}
 
-  // Columns Slider
-  colsSlider = createSlider(1, 150, cols);
-  colsSlider.position(160, 44);
-  colsSlider.input(() => {
-    cols = colsSlider.value();
-    generateColorMaps();  // Update the color maps when the columns slider changes
-  });
-  const colsLabel = createP('Columns');
-  colsLabel.position(20, 40);
-  
-  spacingSlider = createSlider(1, 160, spacing);
-  spacingSlider.position(160, 74);
-  const spacingLabel = createP('Spacing');
-  spacingLabel.position(20, 70);
 
-  sizeSlider = createSlider(1, 100, shapeSize);
-  sizeSlider.position(160, 134);
-  const sizeLabel = createP('Size');
-  sizeLabel.position(20, 130);
+/* ============================================================
+   1.  MAIN GRID & MOTION CONTROLS
+   ============================================================ */
+function createMainSliders () {
 
+  // helper to avoid repetition
+  function labelledSlider ({min, max, val}, y, label) {
+    const s = createSlider(min, max, val);
+    s.position(160, y);
+    createP(label).position(20, y - 4);
+    return s;
+  }
+
+  rowsSlider          = labelledSlider({min:1,   max:300, val:rows},  14,  'Rows');
+  colsSlider          = labelledSlider({min:1,   max:150, val:cols},  44,  'Cols');
+  spacingSlider       = labelledSlider({min:1,   max:160, val:spacing}, 74,'Spacing');
+  sizeSlider          = labelledSlider({min:1,   max:100, val:shapeSize},134,'Size');
+  strokeWeightSlider  = labelledSlider({min:0,   max:10,  val:1},     380,'Outline W');
+  schmovementSlider   = labelledSlider({min:0,   max:900, val:150},   430,'Schmovement');
+  speedSlider         = labelledSlider({min:1,   max:40,  val:10},    460,'Speed');
+  canvasWidthSlider   = labelledSlider({min:100, max:3000,val:1500},  490,'Canvas W');
+  canvasHeightSlider  = labelledSlider({min:100, max:3000,val:1200},  520,'Canvas H');
+  pulseSlider         = labelledSlider({min:-50, max:50,  val:0},     730,'Pulse');
+
+  /* Pulse reset */
+  createButton('Reset Pulse')
+          .position(160, 760)
+          .mousePressed(() => pulseSlider.value(0));
+
+  /* Background colour */
+  backgroundPicker = createColorPicker('#000000');
+  backgroundPicker.position(160, 350);
+  createP('Background').position(20, 330);
+
+  /* Scale‑R (used by your image grid) */
+  scaleR = createInput('25', 'number')
+              .attribute('min', 1).attribute('max', 50);
+  scaleR.position(160, 1160).size(60);
+  createP('scaleR').position(20, 1160);
+
+  /* File input */
+  imageInput = createFileInput(handleFile);
+  imageInput.position(20, 1100);
+}
+
+
+/* ============================================================
+   2.  SHAPE TYPE & TOGGLE
+   ============================================================ */
+function createShapeControls () {
   shapeButton = createButton('Toggle Shape');
   shapeButton.position(160, 294);
   shapeButton.mousePressed(toggleShapeType);
-
-  backgroundPicker = createColorPicker('#000000');
-  backgroundPicker.position(160, 350);
-  const backgroundLabel = createP('Background');
-  backgroundLabel.position(20, 330);
-
-  strokeWeightSlider = createSlider(0, 10, 1);
-  strokeWeightSlider.position(160, 380);
-  const strokeWeightLabel = createP('Outline Weight');
-  strokeWeightLabel.position(20, 360);
-
-  schmovementSlider = createSlider(0, 900, 150);
-  schmovementSlider.position(160, 430);
-  const schmovementLabel = createP('Schmovement');
-  schmovementLabel.position(20, 420);
-
-  speedSlider = createSlider(1, 40, 10);
-  speedSlider.position(160, 460);
-  const speedLabel = createP('Speed');
-  speedLabel.position(20, 450);
-
-  canvasWidthSlider = createSlider(100, 3000, 1500);
-  canvasWidthSlider.position(160, 490);
-  const canvasWidthLabel = createP('Canvas Width');
-  canvasWidthLabel.position(20, 480);
-
-  canvasHeightSlider = createSlider(100, 3000, 1200);
-  canvasHeightSlider.position(160, 520);
-  const canvasHeightLabel = createP('Canvas Height');
-  canvasHeightLabel.position(20, 510);
-
-  pulseSlider = createSlider(-50, 50, 0);
-  pulseSlider.position(160, 730);
-  const pulseLabel = createP('Pulse');
-  pulseLabel.position(20, 720);
-
-  // add a 0 button to reset the pulse slider
-  const pulseResetButton = createButton('Reset Pulse');
-  pulseResetButton.position(160, 760);
-  pulseResetButton.mousePressed(() => {
-    pulseSlider.value(0);
-  });
-
-  imageInput = createFileInput(handleFile);
-  imageInput.position(20, 1100);
-
-
-  scaleR = createInput('25', 'number');
-  scaleR.attribute('min', '1');
-  scaleR.attribute('max', '50');
-  scaleR.position(160, 1160);
-  scaleR.size(60);
-  const scaleRLabel = createP('scaleR');
-  scaleRLabel.position(20, 1160);
-
-  initializeAdditionalUI();
-}
-
-function initializeAdditionalUI() {
-
-  initializeFillColorPickers();
-  initializeStrokeColorPickers();
-  initializeRandButtons();
-  rowsSlider.input(generateColorMaps);
-  colsSlider.input(generateColorMaps);
-  topLeftPicker.input(generateColorMaps);
-  topRightPicker.input(generateColorMaps);
-  bottomLeftPicker.input(generateColorMaps);
-  bottomRightPicker.input(generateColorMaps);
-  strokeTopLeftPicker.input(generateColorMaps);
-  strokeTopRightPicker.input(generateColorMaps);
-  strokeBottomLeftPicker.input(generateColorMaps);
-  strokeBottomRightPicker.input(generateColorMaps);
-
-}
-
-// Stroke color pickers in 2x2 grid layout
-function initializeStrokeColorPickers() {
-  strokeTopLeftPicker = createColorPicker('#f50707');
-  strokeTopLeftPicker.position(160, 570);
-  const strokeTopLeftLabel = createP('Outline Color');
-  strokeTopLeftLabel.position(20, 580);
-
-  strokeTopRightPicker = createColorPicker('#1fff00');
-  strokeTopRightPicker.position(230, 570);
-  
-  strokeBottomLeftPicker = createColorPicker('#073df5');
-  strokeBottomLeftPicker.position(160, 620);
-  
-  strokeBottomRightPicker = createColorPicker('#ffffff');
-  strokeBottomRightPicker.position(230, 620);
-}
-
-// Fill color pickers in 2x2 grid layout
-function initializeFillColorPickers(){
-  topLeftPicker = createColorPicker('#000000');
-  topLeftPicker.position(160, 170);
-  const topLeftLabel = createP('Shape Color');
-  topLeftLabel.position(20, 190);
-
-  topRightPicker = createColorPicker('#000000');
-  topRightPicker.position(230, 170);
-
-  bottomLeftPicker = createColorPicker('#000000');
-  bottomLeftPicker.position(160, 220);
-
-  bottomRightPicker = createColorPicker('#000000');
-  bottomRightPicker.position(230, 220);
-}
-
-function initializeRandButtons() {
-  const randomizeFillColorsButton = createButton('Randomize Fill Colors');
-  randomizeFillColorsButton.position(160, 800);
-  randomizeFillColorsButton.mousePressed(randomizeFillColors);
-  
-  const randomizeStrokeColorsButton = createButton('Randomize Stroke Colors');
-  randomizeStrokeColorsButton.position(160, 830);
-  randomizeStrokeColorsButton.mousePressed(randomizeStrokeColors);
-
-  const randomizeBackgroundColorButton = createButton('Randomize Background Color');
-  randomizeBackgroundColorButton.position(160, 860);
-  randomizeBackgroundColorButton.mousePressed(randomizeBackgroundColor);
-
-  const blackFillButton = createButton('Set fill to black');
-  blackFillButton.position(160, 900);
-  blackFillButton.mousePressed(blackFill);
-
-  const blackBorderButton = createButton('Set border to black');
-  blackBorderButton.position(160, 930);
-  blackBorderButton.mousePressed(blackBorder);
-
-  const setStarSnakesButton = createButton('star snakes');
-  setStarSnakesButton.position(160, 670);
-  setStarSnakesButton.mousePressed(setStarSnakes);
-
-  const setOneSnakeButton = createButton('one');
-  setOneSnakeButton.position(160, 700);
-  setOneSnakeButton.mousePressed(OneSnake);
-
-
-
 }
 
 
-function getRandomColor() {
-  return color(random(255), random(255), random(255));
+/* ============================================================
+   3.  FILL & STROKE COLOUR PICKERS
+   ============================================================ */
+function createFillPickers () {
+  const y0 = 170;
+  topLeftPicker    = colourSwatch(160, y0,        'Shape Colour');
+  topRightPicker   = colourSwatch(230, y0);
+  bottomLeftPicker = colourSwatch(160, y0 + 50);
+  bottomRightPicker= colourSwatch(230, y0 + 50);
+
+  function colourSwatch (x, y, lbl) {
+    if (lbl) createP(lbl).position(20, y + 20);
+    const p = createColorPicker('#000000');
+    p.position(x, y);
+    return p;
+  }
 }
 
 
-function randomizeFillColors() {
-  topLeftPicker.value(getRandomColor().toString('#rrggbb'));
-  topRightPicker.value(getRandomColor().toString('#rrggbb'));
-  bottomLeftPicker.value(getRandomColor().toString('#rrggbb'));
-  bottomRightPicker.value(getRandomColor().toString('#rrggbb'));
 
+/* ============================================================
+   3b.  STROKE COLOUR PICKERS – with your saved defaults
+   ============================================================ */
+function createStrokePickers () {
+  const y0 = 570;            // first row
+
+  strokeTopLeftPicker    = strokeSwatch(160, y0,       '#f50707', 'Outline Colour');
+  strokeTopRightPicker   = strokeSwatch(230, y0,       '#1fff00');
+  strokeBottomLeftPicker = strokeSwatch(160, y0 + 50,  '#073df5');
+  strokeBottomRightPicker= strokeSwatch(230, y0 + 50,  '#ffffff');
+
+  function strokeSwatch (x, y, defaultCol, lbl) {
+    if (lbl) createP(lbl).position(20, y + 10);
+    const picker = createColorPicker(defaultCol);
+    picker.position(x, y);
+    return picker;
+  }
+}
+
+
+/* ============================================================
+   4.  RANDOM / PRESET BUTTONS
+   ============================================================ */
+function createRandomButtons () {
+  const btn = (txt, y, fn) =>
+        createButton(txt).position(160, y).mousePressed(fn);
+
+  btn('Randomize Fill Colours',    800, randomizeFillColors);
+  btn('Randomize Stroke Colours',  830, randomizeStrokeColors);
+  btn('Randomize Background',      860, randomizeBackgroundColor);
+  btn('Set fill to black',         900, blackFill);
+  btn('Set border to black',       930, blackBorder);
+
+  // your custom presets
+  btn('star snakes',               670, setStarSnakes);
+  btn('one',                       700, OneSnake);
+}
+
+
+/* ============================================================
+   5.  CHECKERBOARD CONTROLS
+   ============================================================ */
+function createCheckerboardControls () {
+
+  cbToggle = createCheckbox('Checkerboard BG', false);
+  cbToggle.position(20, 1230).changed(toggleCB);
+
+  // sliders & pickers (initially hidden until toggle on)
+  cbColsSlider   = createSlider(2, 200, 20).position(160, 1260).hide();
+  cbRowsSlider   = createSlider(2, 200, 20).position(160, 1290).hide();
+  cbColPickerA   = createColorPicker('#444444').position(160, 1310).hide();
+  cbColPickerB   = createColorPicker('#dddddd').position(230, 1310).hide();
+
+  createP('CB Columns').position(20, 1260);
+  createP('CB Rows').position(20, 1290);
+  createP('CB Colour A').position(20, 1310);
+  createP('B').position(235, 1290);
+
+  // mark checkerboard dirty when any control moves
+  [cbColsSlider, cbRowsSlider, cbColPickerA, cbColPickerB]
+        .forEach(ctrl => ctrl.input(() => cbDirty = true));
+
+  function toggleCB () {
+    useCheckerboard = cbToggle.checked();
+    cbDirty = true;
+    const vis = useCheckerboard ? 'show' : 'hide';
+    [cbColsSlider, cbRowsSlider, cbColPickerA, cbColPickerB]
+          .forEach(ctrl => ctrl[vis]());
+  }
+}
+
+
+/* ============================================================
+   6.  COLOUR‑MAP REGEN EVENTS
+   ============================================================ */
+function hookGenerateColorMapEvents () {
+  [
+    rowsSlider, colsSlider,
+    topLeftPicker, topRightPicker, bottomLeftPicker, bottomRightPicker,
+    strokeTopLeftPicker, strokeTopRightPicker, strokeBottomLeftPicker, strokeBottomRightPicker
+  ].forEach(ctrl => ctrl.input(generateColorMaps));
+}
+
+
+/* ============================================================
+   7.  UTILITY BUTTON CALLBACKS
+   (unchanged from your original code)
+   ============================================================ */
+function getRandomColor ()       { return color(random(255), random(255), random(255)); }
+
+function randomizeFillColors ()  {
+  [topLeftPicker, topRightPicker, bottomLeftPicker, bottomRightPicker]
+      .forEach(p => p.value(getRandomColor().toString('#rrggbb')));
   generateColorMaps();
 }
 
-
-function randomizeStrokeColors() {
-  strokeTopLeftPicker.value(getRandomColor().toString('#rrggbb'));
-  strokeTopRightPicker.value(getRandomColor().toString('#rrggbb'));
-  strokeBottomLeftPicker.value(getRandomColor().toString('#rrggbb'));
-  strokeBottomRightPicker.value(getRandomColor().toString('#rrggbb'));
-
+function randomizeStrokeColors () {
+  [strokeTopLeftPicker, strokeTopRightPicker, strokeBottomLeftPicker, strokeBottomRightPicker]
+      .forEach(p => p.value(getRandomColor().toString('#rrggbb')));
   generateColorMaps();
 }
 
+function randomizeBackgroundColor () { backgroundPicker.value(getRandomColor().toString('#rrggbb')); }
 
-function randomizeBackgroundColor() {
-  backgroundPicker.value(getRandomColor().toString('#rrggbb'));
+function blackFill ()   {
+  [topLeftPicker, topRightPicker, bottomLeftPicker, bottomRightPicker]
+      .forEach(p => p.value('#000000'));
+  generateColorMaps();
 }
-
-
-function blackFill() {
-  topLeftPicker.value('#000000');
-  topRightPicker.value('#000000');
-  bottomLeftPicker.value("#000000")
-  bottomRightPicker.value("#000000")
-
-    generateColorMaps();
-
+function blackBorder () {
+  [strokeTopLeftPicker, strokeTopRightPicker, strokeBottomLeftPicker, strokeBottomRightPicker]
+      .forEach(p => p.value('#000000'));
+  generateColorMaps();
 }
-
-
-function blackBorder() {
-  strokeTopLeftPicker.value('#000000');
-  strokeTopRightPicker.value('#000000');
-  strokeBottomLeftPicker.value("#000000")
-  strokeBottomRightPicker.value("#000000")
-
-    generateColorMaps();
-
-}
-
-
