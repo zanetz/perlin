@@ -283,8 +283,16 @@ function draw3 () {
    ---------------------------------------------- */
 
 /* cheap frame‑blit, rebuild only when cbDirty === true */
-function blitCheckerboard () {
-  if (cbDirty) rebuildCheckerboard();
+function blitCheckerboard() {
+  // If parameters changed (cbDirty) **or** canvas size changed, rebuild:
+  if (
+      cbDirty ||
+      !checkerGfx ||
+      checkerGfx.width  !== width ||
+      checkerGfx.height !== height
+  ) {
+    rebuildCheckerboard();
+  }
   image(checkerGfx, 0, 0);
 }
 

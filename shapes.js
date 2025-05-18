@@ -106,6 +106,10 @@ function drawShape(shapeType, x, y, size) {
   
     // Set shape type to a specific value, for example, "star"
     shapeType = 'star';
+
+    // set draw mode to draw3
+    drawMode = 'draw3'
+
   
     // Redraw the canvas to apply changes
     redraw();
